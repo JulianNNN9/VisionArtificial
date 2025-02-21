@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 
 img = cv2.imread('Actividad en clase 2/Imagenes/Vaca.jpg')
 
-
 # Obtener las dimensiones de la imagen
 (h, w) = img.shape[:2]
 
