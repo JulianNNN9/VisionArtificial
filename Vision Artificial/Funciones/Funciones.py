@@ -2,16 +2,13 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-def ChangeSize(ruta, tamanioX, tamanioY):
-    img = cv2.imread(ruta)
-
+def ChangeSize(img, tamanioX, tamanioY):
     # Cambiar el tamaño de la imagen (Reducción y Amplificación)
     resized_img = cv2.resize(img, (tamanioX, tamanioY))  # Cambiar el tamaño a 400x400 píxeles
 
     return resized_img
 
-def InterpolationLinear(ruta, tamanioX, tamanioY):
-    img = cv2.imread(ruta)
+def InterpolationLinear(img, tamanioX, tamanioY):
 
     # Cambiar tamaño usando diferentes métodos de interpolación
     resized_bilinear = cv2.resize(img, (tamanioX, tamanioY), interpolation=cv2.INTER_LINEAR)  # Bilineal
@@ -19,50 +16,49 @@ def InterpolationLinear(ruta, tamanioX, tamanioY):
     return resized_bilinear
     
 
-def InterpolationNearest(ruta, tamanioX, tamanioY):
-    img = cv2.imread(ruta)
+def InterpolationNearest(img, tamanioX, tamanioY):
 
     resized_nearest = cv2.resize(img, (tamanioX, tamanioY), interpolation=cv2.INTER_NEAREST)  # Vecino más cercano
 
     return resized_nearest
 
 
-def And_Op(ruta1, ruta2, umbral):
+def And_Op(img1, img2, umbral):
     
-    img1 = cv2.imread(ruta1, cv2.IMREAD_GRAYSCALE)
-    _, img1_bin = cv2.threshold(img1, umbral, 255, cv2.THRESH_BINARY)
+    img11 = ToGrayScale(img1)
+    _, img1_bin = cv2.threshold(img11, umbral, 255, cv2.THRESH_BINARY)
 
-    img2 = cv2.imread(ruta2, cv2.IMREAD_GRAYSCALE)
-    _, img2_bin = cv2.threshold(img2, umbral, 255, cv2.THRESH_BINARY)
+    img21 = ToGrayScale(img2)
+    _, img2_bin = cv2.threshold(img21, umbral, 255, cv2.THRESH_BINARY)
 
     and_img = cv2.bitwise_and(img1_bin, img2_bin)
 
     return and_img
 
-def Or_Op(ruta1, ruta2, umbral):
+def Or_Op(img1, img2, umbral):
 
-    img1 = cv2.imread(ruta1, cv2.IMREAD_GRAYSCALE)
-    _, img1_bin = cv2.threshold(img1, umbral, 255, cv2.THRESH_BINARY)
+    img11 = ToGrayScale(img1)
+    _, img1_bin = cv2.threshold(img11, umbral, 255, cv2.THRESH_BINARY)
 
-    img2 = cv2.imread(ruta2, cv2.IMREAD_GRAYSCALE)
-    _, img2_bin = cv2.threshold(img2, umbral, 255, cv2.THRESH_BINARY)
+    img21 = ToGrayScale(img2)
+    _, img2_bin = cv2.threshold(img21, umbral, 255, cv2.THRESH_BINARY)
 
     or_img = cv2.bitwise_or(img1_bin, img2_bin)
 
     return or_img
 
-def Not_Op(ruta, umbral):
+def Not_Op(img, umbral):
 
-    img = cv2.imread(ruta, cv2.IMREAD_GRAYSCALE)
-    _, img_bin = cv2.threshold(img, umbral, 255, cv2.THRESH_BINARY)
+    img11 = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
+    _, img_bin = cv2.threshold(img11, umbral, 255, cv2.THRESH_BINARY)
 
     not_img = cv2.bitwise_not(img_bin)
 
     return not_img
 
 # Suma de imágenes
-def Sum_Op (ruta, valor):
-    sum_img = cv2.add(ruta, valor)
+def Sum_Op (img, valor):
+    sum_img = cv2.add(img, valor)
     return sum_img
 
 # Resta de imágenes
@@ -81,8 +77,8 @@ def Div_Op (ruta, valor):
     return div_img
 
 # Cargar una imagen en color
-def ToBinary (ruta, umbral):
-    img = cv2.imread(ruta)
+def ToBinary (img, umbral):
+   
 
     # Convertir a escala de grises
     gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -92,17 +88,15 @@ def ToBinary (ruta, umbral):
 
     return binary_img
 
-def ToGrayScale (ruta):
-    img = cv2.imread(ruta)
+def ToGrayScale (img):
 
     # Convertir a escala de grises
     gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     return gray_img
 
-def RotateImage (ruta):
-    img = cv2.imread(ruta)
-
+def RotateImage (img):
+   
     # Obtener las dimensiones de la imagen
     (h, w) = img.shape[:2]
 
@@ -117,8 +111,8 @@ def RotateImage (ruta):
 
     return rotated_img
 
-def SharpenImage (ruta):
-    image = cv2.imread(ruta)
+def SharpenImage (img):
+  
 
     # Crear un kernel para nítidez
     sharpen_kernel = np.array([[-1, -1, -1],
@@ -127,12 +121,11 @@ def SharpenImage (ruta):
 
     # Aplicar el filtro de nítidez el segundo parametro de profundidad de la imagen
     # de salida ddepth
-    sharpened_image = cv2.filter2D(image, 0, sharpen_kernel)
+    sharpened_image = cv2.filter2D(img, 0, sharpen_kernel)
 
     return sharpened_image
 
-def RelieveImage (ruta):
-    image = cv2.imread('Actividad en clase 3/Imagenes/Orquideas.jpg')
+def RelieveImage (img):
 
     # Crear un kernel para el filtro de relieve
     emboss_kernel = np.array([[-2, -1, 0],
@@ -140,31 +133,27 @@ def RelieveImage (ruta):
                             [ 0,  1, 2]])
 
     # Aplicar el filtro de relieve
-    embossed_image = cv2.filter2D(image, -1, emboss_kernel)
+    embossed_image = cv2.filter2D(img, -1, emboss_kernel)
 
     return embossed_image
 
-def BlurFilter(ruta):
-    # Cargar la imagen
-    image = cv2.imread(ruta)
+def BlurFilter(img):
 
     # Aplicar el filtro de desenfoque
-    blurred_image = cv2.blur(image, (50, 50))
+    blurred_image = cv2.blur(img, (50, 50))
     return blurred_image
 
-def CannyEdgeDetection(ruta):
+def CannyEdgeDetection(img):
         # Cargar la imagen en escala de grises
-    image = cv2.imread(ruta, cv2.IMREAD_GRAYSCALE)
-
+    image = ToGrayScale(img)
     # Aplicar el filtro de detección de bordes (Canny)
     edges = cv2.Canny(image, 100, 200)
     return edges
 
-def GaussianBlur(ruta):
+def GaussianBlur(img):
         # Cargar la imagen
-    image = cv2.imread(ruta)
-
+   
     # Aplicar el filtro de desenfoque gaussiano
-    gaussian_blurred_image = cv2.GaussianBlur(image, (51, 51), 0)
+    gaussian_blurred_image = cv2.GaussianBlur(img, (51, 51), 0)
 
     return gaussian_blurred_image
