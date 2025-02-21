@@ -88,7 +88,20 @@ def mostrar_imagenes(resultados):
 
 
 
+def main():
+    imagenes = obtener_imagenes_de_carpeta("VisionArtificial\Vision Artificial\Laboratorio 1\imagenes")
+    if not imagenes:
+        print("No se pudieron cargar las imágenes.")
+        return
+    
+    resultados = aplicar_procesamiento(imagenes)
+    mostrar_imagenes(resultados)
 
+if __name__ == "__main__":
+    main()
+
+
+    
 
 
 
