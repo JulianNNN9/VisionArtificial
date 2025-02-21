@@ -100,8 +100,8 @@ def ToGrayScale (ruta):
 
     return gray_img
 
-def RotateImage ():
-    img = cv2.imread('Actividad en clase 2/Imagenes/Vaca.jpg')
+def RotateImage (ruta):
+    img = cv2.imread(ruta)
 
     # Obtener las dimensiones de la imagen
     (h, w) = img.shape[:2]
@@ -114,3 +114,19 @@ def RotateImage ():
 
     # Rotar la imagen
     rotated_img = cv2.warpAffine(img, M, (w, h))
+
+    return rotated_img
+
+def SharpenImage (ruta):
+    image = cv2.imread(ruta)
+
+    # Crear un kernel para nítidez
+    sharpen_kernel = np.array([[-1, -1, -1],
+                               [-1,  9, -1],
+                               [-1, -1, -1]])
+
+    # Aplicar el filtro de nítidez el segundo parametro de profundidad de la imagen
+    # de salida ddepth
+    sharpened_image = cv2.filter2D(image, 0, sharpen_kernel)
+
+    return sharpened_image
