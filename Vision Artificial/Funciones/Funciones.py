@@ -131,6 +131,19 @@ def SharpenImage (ruta):
 
     return sharpened_image
 
+def RelieveImage (ruta):
+    image = cv2.imread('Actividad en clase 3/Imagenes/Orquideas.jpg')
+
+    # Crear un kernel para el filtro de relieve
+    emboss_kernel = np.array([[-2, -1, 0],
+                            [-1,  1, 1],
+                            [ 0,  1, 2]])
+
+    # Aplicar el filtro de relieve
+    embossed_image = cv2.filter2D(image, -1, emboss_kernel)
+
+    return embossed_image
+
 def BlurFilter(ruta):
     # Cargar la imagen
     image = cv2.imread(ruta)
@@ -154,3 +167,4 @@ def GaussianBlur(ruta):
     # Aplicar el filtro de desenfoque gaussiano
     gaussian_blurred_image = cv2.GaussianBlur(image, (51, 51), 0)
 
+    return gaussian_blurred_image
