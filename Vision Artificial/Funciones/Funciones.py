@@ -114,3 +114,27 @@ def RotateImage ():
 
     # Rotar la imagen
     rotated_img = cv2.warpAffine(img, M, (w, h))
+
+def BlurFilter(ruta):
+    # Cargar la imagen
+    image = cv2.imread(ruta)
+
+    # Aplicar el filtro de desenfoque
+    blurred_image = cv2.blur(image, (50, 50))
+    return blurred_image
+
+def CannyEdgeDetection(ruta):
+        # Cargar la imagen en escala de grises
+    image = cv2.imread(ruta, cv2.IMREAD_GRAYSCALE)
+
+    # Aplicar el filtro de detección de bordes (Canny)
+    edges = cv2.Canny(image, 100, 200)
+    return edges
+
+def GaussianBlur(ruta):
+        # Cargar la imagen
+    image = cv2.imread(ruta)
+
+    # Aplicar el filtro de desenfoque gaussiano
+    gaussian_blurred_image = cv2.GaussianBlur(image, (51, 51), 0)
+
