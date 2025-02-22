@@ -1,5 +1,4 @@
 import cv2
-import matplotlib.pyplot as plt
 import numpy as np
 
 def ChangeSize(img, tamanioX, tamanioY):
@@ -49,8 +48,7 @@ def Or_Op(img1, img2, umbral):
 
 def Not_Op(img, umbral):
 
-    img11 = cv2.imread(img, cv2.IMREAD_GRAYSCALE)
-    _, img_bin = cv2.threshold(img11, umbral, 255, cv2.THRESH_BINARY)
+    _, img_bin = cv2.threshold(img, umbral, 255, cv2.THRESH_BINARY)
 
     not_img = cv2.bitwise_not(img_bin)
 
