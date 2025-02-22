@@ -1,6 +1,5 @@
 import os
 import cv2
-import numpy as np
 import sys
 import matplotlib.pyplot as plt
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -58,7 +57,12 @@ def obtener_imagenes_de_carpeta(ruta_carpeta):
 
 
 def aplicar_procesamiento(imagenes):
+    """
+    Procesa todas las imágenes de un array y las devuelve como una lista de imagenes en arrays de NumPy.
 
+    :param imagenes: arrays de Numpy, array donde están las imágenes a procesar.
+    :return: arrays de Numpy, lista de imágenes procesadas por cada uno de los metodos.
+    """
     resultados = []
     
     for imagen in imagenes:
@@ -88,7 +92,7 @@ def aplicar_procesamiento(imagenes):
     
     return resultados
 
-def imprimir_resultados(resultados, num_columnas=4):
+def imprimir_resultados(resultados, num_columnas=6):
     """
     Muestra cada imagen original con sus variaciones en una ventana independiente.
     
@@ -104,8 +108,8 @@ def imprimir_resultados(resultados, num_columnas=4):
 
         # Agregar imágenes procesadas
         for index, (etiqueta, imagen) in enumerate(procesadas):
-            imagen_rgb = cv2.cvtColor(imagen, cv2.COLOR_BGR2RGB)
-            axes[index].imshow(imagen)
+            imagen_rgb = cv2.cvtColor(imagen, cv2.COLOR_BGR2RGB) #Esto es necesario ya que sino muestra casi todas las imagenes en tonalidades verdes, debido a matplotlib
+            axes[index].imshow(imagen_rgb)
             axes[index].set_title(etiqueta, fontsize=10)
             axes[index].axis("off")
 
