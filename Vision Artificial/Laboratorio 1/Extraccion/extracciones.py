@@ -1,9 +1,6 @@
-import os
 import cv2
 import numpy as np
 import pandas as pd
-import sys
-import matplotlib.pyplot as plt
 
 def extraer_caracteristicas(imagen, nombre):
     """Extrae características de la imagen y devuelve un diccionario con los valores."""

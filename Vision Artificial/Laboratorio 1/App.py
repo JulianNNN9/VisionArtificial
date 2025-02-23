@@ -23,6 +23,8 @@ from Funciones.Funciones import RelieveImage
 from Funciones.Funciones import BlurFilter
 from Funciones.Funciones import CannyEdgeDetection
 from Funciones.Funciones import GaussianBlur
+from Extraccion.extracciones import extraer_caracteristicas
+from Extraccion.extracciones import guardar_caracteristicas_csv
 
 
 def obtener_imagenes_de_carpeta(ruta_carpeta):
@@ -124,11 +126,16 @@ def imprimir_resultados(resultados, num_columnas=6):
 
 def main():
 
-    imagenes = obtener_imagenes_de_carpeta("VisionArtificial/Vision Artificial/Laboratorio 1/imagenes")
+    imagenes = obtener_imagenes_de_carpeta("Vision Artificial/Laboratorio 1/imagenes")
     
     resultados = aplicar_procesamiento(imagenes)
 
     imprimir_resultados(resultados)
+
+    caracteristicas_lista = []
+    for i, procesadas in enumerate(resultados):
+        for etiqueta, img in procesadas:
+            caracteristicas_lista.append(extraer_caracteristicas(img, etiqueta))
 
 if __name__ == "__main__":
     main()
