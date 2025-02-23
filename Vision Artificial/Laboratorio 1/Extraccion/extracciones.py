@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from io import StringIO
 
 def extraer_caracteristicas(numero_imagen, imagen, nombre):
     """Extrae características de la imagen y devuelve un diccionario con los valores."""
@@ -33,7 +33,7 @@ def extraer_caracteristicas(numero_imagen, imagen, nombre):
     }
     return caracteristicas
 
-def guardar_caracteristicas_csv(caracteristicas_lista, archivo_salida="VisionArtificial/Vision Artificial/Laboratorio 1/Resultados/caracteristicas_imagenes.csv"):
+def guardar_caracteristicas_csv(caracteristicas_lista, archivo_salida="Vision Artificial/Laboratorio 1/Resultados/caracteristicas_imagenes.csv"):
     """Guarda una lista de características extraídas en un archivo CSV."""
     if not isinstance(caracteristicas_lista, list) or not all(isinstance(item, dict) for item in caracteristicas_lista):
         print("Error: La entrada debe ser una lista de diccionarios.")
@@ -42,3 +42,27 @@ def guardar_caracteristicas_csv(caracteristicas_lista, archivo_salida="VisionArt
     df = pd.DataFrame(caracteristicas_lista)
     df.to_csv(archivo_salida, index=False)
     print(f"Características guardadas en {archivo_salida}")
+
+def graficar_comparacion():
+
+    data_path = "Vision Artificial/Laboratorio 1/Resultados/caracteristicas_imagenes.csv"
+    df = pd.read_csv(data_path)
+
+    # Separar datos por imagen
+    img1 = df[df["Numero_Imagen"] == 1]
+    img2 = df[df["Numero_Imagen"] == 2]
+
+    # Lista de métricas a comparar
+    metricas = ["Promedio_Intensidad", "Desviacion_Estandar", "Determinante", "Multiplicacion", "Suma"]
+
+    # Graficar cada métrica
+    for metrica in metricas:
+        plt.figure(figsize=(12, 5))
+        plt.plot(img1["Nombre"], img1[metrica], label="Imagen 1", marker="o")
+        plt.plot(img2["Nombre"], img2[metrica], label="Imagen 2", marker="s")
+        plt.xticks(rotation=90)
+        plt.ylabel(metrica)
+        plt.title(f"Comparación de {metrica} entre Imagen 1 y Imagen 2")
+        plt.legend()
+        plt.grid(True)
+        plt.show()

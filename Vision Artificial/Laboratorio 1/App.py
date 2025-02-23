@@ -25,7 +25,8 @@ from Funciones.Funciones import CannyEdgeDetection
 from Funciones.Funciones import GaussianBlur
 from Extraccion.extracciones import extraer_caracteristicas
 from Extraccion.extracciones import guardar_caracteristicas_csv
-
+from Extraccion.extracciones import graficar_comparacion
+from Extraccion.extracciones import graficar_comparacion1
 
 
 def obtener_imagenes_de_carpeta(ruta_carpeta):
@@ -127,19 +128,20 @@ def imprimir_resultados(resultados, num_columnas=6):
 
 def main():
 
-    imagenes = obtener_imagenes_de_carpeta("VisionArtificial/Vision Artificial/Laboratorio 1/imagenes")
+    #imagenes = obtener_imagenes_de_carpeta("Vision Artificial/Laboratorio 1/imagenes")
     
-    resultados = aplicar_procesamiento(imagenes)
+    #resultados = aplicar_procesamiento(imagenes)
 
     #imprimir_resultados(resultados)
 
-    caracteristicas_lista = []
-    for i, procesadas in enumerate(resultados):
-        for etiqueta, img in procesadas:
-            caracteristicas_lista.append(extraer_caracteristicas(i+1, img, etiqueta))
+    #caracteristicas_lista = []
+    #for i, procesadas in enumerate(resultados):
+    #    for etiqueta, img in procesadas:
+    #        caracteristicas_lista.append(extraer_caracteristicas(i+1, img, etiqueta))
 
-    guardar_caracteristicas_csv(caracteristicas_lista)
+    #guardar_caracteristicas_csv(caracteristicas_lista)
 
+    graficar_comparacion1()
 
 if __name__ == "__main__":
     main()
