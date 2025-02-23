@@ -59,7 +59,7 @@ def guardar_caracteristicas_csv(caracteristicas_lista, archivo_salida="Vision Ar
     print(f"Características guardadas en {archivo_salida}")  # Mensaje de confirmación
 
 def graficar_comparacion():
-    """Genera gráficos de comparación entre dos imágenes usando métricas extraídas del archivo CSV."""
+    """Genera gráficos de comparación entre dos imágenes usando métricas extraídas del archivo CSV en una sola ventana."""
 
     # Ruta del archivo CSV que contiene las características de las imágenes
     data_path = "Vision Artificial/Laboratorio 1/Resultados/caracteristicas_imagenes.csv"
@@ -74,14 +74,24 @@ def graficar_comparacion():
     # Lista de métricas que se compararán gráficamente
     metricas = ["Promedio_Intensidad", "Desviacion_Estandar", "Determinante", "Multiplicacion", "Suma"]
 
-    # Generar un gráfico para cada métrica
-    for metrica in metricas:
-        plt.figure(figsize=(12, 5))  # Configurar el tamaño del gráfico
-        plt.plot(img1["Nombre"], img1[metrica], label="Imagen 1", marker="o")  # Graficar los valores de la Imagen 1
-        plt.plot(img2["Nombre"], img2[metrica], label="Imagen 2", marker="s")  # Graficar los valores de la Imagen 2
-        plt.xticks(rotation=90)  # Rotar las etiquetas en el eje X para mejor visualización
-        plt.ylabel(metrica)  # Etiqueta del eje Y con el nombre de la métrica
-        plt.title(f"Comparación de {metrica} entre Imagen 1 y Imagen 2")  # Título del gráfico
-        plt.legend()  # Agregar leyenda para identificar cada imagen
-        plt.grid(True)  # Agregar una cuadrícula para facilitar la lectura
-        plt.show()  # Mostrar el gráfico en pantalla
+    # Crear subgráficos en una cuadrícula de 3 filas × 2 columnas
+    fig, axes = plt.subplots(nrows=3, ncols=2, figsize=(14, 10))
+    axes = axes.flatten()  # Convertir la matriz de ejes en una lista
+
+    # Generar un gráfico para cada métrica en los subgráficos
+    for i, metrica in enumerate(metricas):
+        ax = axes[i]
+        ax.plot(img1["Nombre"], img1[metrica], label="Imagen 1", marker="o")
+        ax.plot(img2["Nombre"], img2[metrica], label="Imagen 2", marker="s")
+        ax.set_xticklabels(img1["Nombre"], rotation=90)  # Rotar etiquetas del eje X
+        ax.set_ylabel(metrica)
+        ax.set_title(f"Comparación de {metrica}")
+        ax.legend()
+        ax.grid(True)
+
+    # Eliminar cualquier subplot vacío si hay menos métricas que subgráficos
+    for j in range(i + 1, len(axes)):
+        fig.delaxes(axes[j])
+
+    plt.tight_layout()  # Ajustar el diseño para evitar superposiciones
+    plt.show()  # Mostrar todas las gráficas en una sola ventana
