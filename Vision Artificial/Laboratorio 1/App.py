@@ -27,6 +27,7 @@ from Extraccion.extracciones import extraer_caracteristicas
 from Extraccion.extracciones import guardar_caracteristicas_csv
 
 
+
 def obtener_imagenes_de_carpeta(ruta_carpeta):
     """
     Carga todas las imágenes de una carpeta y las devuelve como una lista de arrays de NumPy.
@@ -135,9 +136,10 @@ def main():
     caracteristicas_lista = []
     for i, procesadas in enumerate(resultados):
         for etiqueta, img in procesadas:
-            caracteristicas_lista.append(extraer_caracteristicas(img, etiqueta))
+            caracteristicas_lista.append(extraer_caracteristicas(i+1, img, etiqueta))
 
     guardar_caracteristicas_csv(caracteristicas_lista)
+
 
 if __name__ == "__main__":
     main()

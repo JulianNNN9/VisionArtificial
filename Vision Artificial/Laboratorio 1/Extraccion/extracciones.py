@@ -1,8 +1,10 @@
 import cv2
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 
-def extraer_caracteristicas(imagen, nombre):
+def extraer_caracteristicas(numero_imagen, imagen, nombre):
     """Extrae características de la imagen y devuelve un diccionario con los valores."""
     img_gray = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY) if len(imagen.shape) == 3 else imagen
     if imagen.shape[0] > 100 and imagen.shape[1] > 200:
@@ -18,6 +20,7 @@ def extraer_caracteristicas(imagen, nombre):
     multiplicacion = np.sum(img_gray * 2)
     suma = np.sum(img_gray + 50)
     caracteristicas = {
+        "Numero_Imagen": numero_imagen,
         "Nombre": nombre,
         "Pixel_100_200_B": pixel_valor[0],
         "Pixel_100_200_G": pixel_valor[1],
@@ -39,4 +42,3 @@ def guardar_caracteristicas_csv(caracteristicas_lista, archivo_salida="VisionArt
     df = pd.DataFrame(caracteristicas_lista)
     df.to_csv(archivo_salida, index=False)
     print(f"Características guardadas en {archivo_salida}")
-
