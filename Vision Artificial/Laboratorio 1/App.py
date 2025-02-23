@@ -124,7 +124,7 @@ def imprimir_resultados(resultados, num_columnas=6):
 
 def main():
 
-    imagenes = obtener_imagenes_de_carpeta("Vision Artificial/Laboratorio 1/imagenes")
+    imagenes = obtener_imagenes_de_carpeta("VisionArtificial/Vision Artificial/Laboratorio 1/imagenes")
     
     resultados = aplicar_procesamiento(imagenes)
 
