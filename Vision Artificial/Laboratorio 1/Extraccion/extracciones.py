@@ -2,67 +2,96 @@ import cv2
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from io import StringIO
 
 def extraer_caracteristicas(numero_imagen, imagen, nombre):
     """Extrae características de la imagen y devuelve un diccionario con los valores."""
+    
+    # Convertir la imagen a escala de grises si es una imagen en color (BGR)
     img_gray = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY) if len(imagen.shape) == 3 else imagen
-    if imagen.shape[0] > 100 and imagen.shape[1] > 200:
-        if len(imagen.shape) == 3:  # Imagen en color (BGR)
-            pixel_valor = tuple(imagen[100, 200])  
-        else:  # Imagen en escala de grises
-            pixel_valor = (imagen[100, 200], None, None)  
-    else:
-        pixel_valor = (None, None, None)
 
+    # Verificar si la imagen tiene al menos 100 filas y 200 columnas para extraer un píxel específico
+    if imagen.shape[0] > 100 and imagen.shape[1] > 200:
+        if len(imagen.shape) == 3:  # Si la imagen es en color (BGR)
+            pixel_valor = tuple(imagen[100, 200])  # Extraer el valor del píxel en la posición (100, 200)
+        else:  # Si la imagen es en escala de grises
+            pixel_valor = (imagen[100, 200], None, None)  # Solo hay un canal, los otros valores quedan en None
+    else:
+        pixel_valor = (None, None, None)  # Si la imagen es muy pequeña, no se extrae el píxel
+
+    # Extraer una submatriz 3x3 de la imagen en escala de grises si tiene al menos esas dimensiones
     matriz_reducida = img_gray[:3, :3] if img_gray.shape[0] >= 3 and img_gray.shape[1] >= 3 else None
+
+    # Calcular el determinante de la matriz 3x3 si es válida
     determinante = np.linalg.det(matriz_reducida) if matriz_reducida is not None else None
-    multiplicacion = np.sum(img_gray * 2)
-    suma = np.sum(img_gray + 50)
+
+    # Realizar operaciones matemáticas sobre la imagen en escala de grises
+    multiplicacion = np.sum(img_gray * 2)  # Multiplicación de todos los píxeles por 2 y suma
+    suma = np.sum(img_gray + 50)  # Suma de todos los píxeles con un incremento de 50 unidades
+
+    # Crear un diccionario con las características extraídas
     caracteristicas = {
         "Numero_Imagen": numero_imagen,
         "Nombre": nombre,
-        "Pixel_100_200_B": pixel_valor[0],
-        "Pixel_100_200_G": pixel_valor[1],
-        "Pixel_100_200_R": pixel_valor[2],
-        "Promedio_Intensidad": np.mean(img_gray),
-        "Desviacion_Estandar": np.std(img_gray),
-        "Determinante": determinante,
-        "Multiplicacion": multiplicacion,
-        "Suma": suma
+        "Pixel_100_200_B": pixel_valor[0],  # Canal Azul
+        "Pixel_100_200_G": pixel_valor[1],  # Canal Verde
+        "Pixel_100_200_R": pixel_valor[2],  # Canal Rojo
+        "Promedio_Intensidad": np.mean(img_gray),  # Promedio de intensidad en escala de grises
+        "Desviacion_Estandar": np.std(img_gray),  # Desviación estándar de la intensidad
+        "Determinante": determinante,  # Determinante de la matriz 3x3
+        "Multiplicacion": multiplicacion,  # Resultado de la operación de multiplicación
+        "Suma": suma  # Resultado de la operación de suma
     }
-    return caracteristicas
+    return caracteristicas  # Retornar el diccionario con las características de la imagen
 
 def guardar_caracteristicas_csv(caracteristicas_lista, archivo_salida="Vision Artificial/Laboratorio 1/Resultados/caracteristicas_imagenes.csv"):
     """Guarda una lista de características extraídas en un archivo CSV."""
+
+    # Verificar que la entrada sea una lista de diccionarios antes de procesarla
     if not isinstance(caracteristicas_lista, list) or not all(isinstance(item, dict) for item in caracteristicas_lista):
-        print("Error: La entrada debe ser una lista de diccionarios.")
+        print("Error: La entrada debe ser una lista de diccionarios.")  # Mensaje de error si la entrada no es válida
         return
     
+    # Crear un DataFrame de pandas a partir de la lista de características
     df = pd.DataFrame(caracteristicas_lista)
+
+    # Guardar el DataFrame en un archivo CSV sin incluir el índice
     df.to_csv(archivo_salida, index=False)
-    print(f"Características guardadas en {archivo_salida}")
+    print(f"Características guardadas en {archivo_salida}")  # Mensaje de confirmación
 
 def graficar_comparacion():
+    """Genera gráficos de comparación entre dos imágenes usando métricas extraídas del archivo CSV en una sola ventana."""
 
+    # Ruta del archivo CSV que contiene las características de las imágenes
     data_path = "Vision Artificial/Laboratorio 1/Resultados/caracteristicas_imagenes.csv"
+
+    # Leer los datos del CSV en un DataFrame de pandas
     df = pd.read_csv(data_path)
 
-    # Separar datos por imagen
+    # Filtrar los datos para obtener solo las filas correspondientes a cada imagen
     img1 = df[df["Numero_Imagen"] == 1]
     img2 = df[df["Numero_Imagen"] == 2]
 
-    # Lista de métricas a comparar
+    # Lista de métricas que se compararán gráficamente
     metricas = ["Promedio_Intensidad", "Desviacion_Estandar", "Determinante", "Multiplicacion", "Suma"]
 
-    # Graficar cada métrica
-    for metrica in metricas:
-        plt.figure(figsize=(12, 5))
-        plt.plot(img1["Nombre"], img1[metrica], label="Imagen 1", marker="o")
-        plt.plot(img2["Nombre"], img2[metrica], label="Imagen 2", marker="s")
-        plt.xticks(rotation=90)
-        plt.ylabel(metrica)
-        plt.title(f"Comparación de {metrica} entre Imagen 1 y Imagen 2")
-        plt.legend()
-        plt.grid(True)
-        plt.show()
+    # Crear subgráficos en una cuadrícula de 3 filas × 2 columnas
+    fig, axes = plt.subplots(nrows=3, ncols=2, figsize=(14, 10))
+    axes = axes.flatten()  # Convertir la matriz de ejes en una lista
+
+    # Generar un gráfico para cada métrica en los subgráficos
+    for i, metrica in enumerate(metricas):
+        ax = axes[i]
+        ax.plot(img1["Nombre"], img1[metrica], label="Imagen 1", marker="o")
+        ax.plot(img2["Nombre"], img2[metrica], label="Imagen 2", marker="s")
+        ax.set_xticklabels(img1["Nombre"], rotation=90)  # Rotar etiquetas del eje X
+        ax.set_ylabel(metrica)
+        ax.set_title(f"Comparación de {metrica}")
+        ax.legend()
+        ax.grid(True)
+
+    # Eliminar cualquier subplot vacío si hay menos métricas que subgráficos
+    for j in range(i + 1, len(axes)):
+        fig.delaxes(axes[j])
+
+    plt.tight_layout()  # Ajustar el diseño para evitar superposiciones
+    plt.show()  # Mostrar todas las gráficas en una sola ventana
