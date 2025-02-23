@@ -126,16 +126,18 @@ def imprimir_resultados(resultados, num_columnas=6):
 
 def main():
 
-    imagenes = obtener_imagenes_de_carpeta("Vision Artificial/Laboratorio 1/imagenes")
+    imagenes = obtener_imagenes_de_carpeta("VisionArtificial/Vision Artificial/Laboratorio 1/imagenes")
     
     resultados = aplicar_procesamiento(imagenes)
 
-    imprimir_resultados(resultados)
+    #imprimir_resultados(resultados)
 
     caracteristicas_lista = []
     for i, procesadas in enumerate(resultados):
         for etiqueta, img in procesadas:
             caracteristicas_lista.append(extraer_caracteristicas(img, etiqueta))
+
+    guardar_caracteristicas_csv(caracteristicas_lista)
 
 if __name__ == "__main__":
     main()
