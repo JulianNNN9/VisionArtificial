@@ -155,3 +155,38 @@ def GaussianBlur(img):
     gaussian_blurred_image = cv2.GaussianBlur(img, (51, 51), 0)
 
     return gaussian_blurred_image
+
+
+def cargar_imagen(ruta):
+    """Carga una imagen en escala de grises."""
+    return cv2.imread(ruta, cv2.IMREAD_GRAYSCALE)
+
+def umbralizar_imagen(image, threshold=127):
+    """Convierte la imagen en binaria mediante umbralización."""
+    _, binary_image = cv2.threshold(image, threshold, 255, cv2.THRESH_BINARY)
+    return binary_image
+
+def aplicar_apertura(image, kernel_size=(7, 7)):
+    """Aplica la operación morfológica de apertura para eliminar ruido."""
+    kernel = np.ones(kernel_size, np.uint8)
+    return cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+
+def aplicar_cierre(image, kernel_size=(7, 7)):
+    """Aplica la operación morfológica de cierre para rellenar agujeros."""
+    kernel = np.ones(kernel_size, np.uint8)
+    return cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
+
+def detectar_contornos(image):
+    """Detecta contornos en la imagen binaria cerrada."""
+    contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    return contours
+
+def dibujar_contornos(image, contours):
+    """Dibuja los contornos sobre la imagen original."""
+    return cv2.drawContours(np.copy(image), contours, -1, (0, 255, 0), 2)
+
+def calcular_caracteristicas(contours):
+    """Calcula áreas y perímetros de los contornos detectados."""
+    areas = [cv2.contourArea(c) for c in contours]
+    perimeters = [cv2.arcLength(c, True) for c in contours]
+    return areas, perimeters
