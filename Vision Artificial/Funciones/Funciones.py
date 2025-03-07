@@ -142,7 +142,7 @@ def BlurFilter(img):
     return blurred_image
 
 def CannyEdgeDetection(img):
-        # Cargar la imagen en escala de grises
+    # Cargar la imagen en escala de grises
     image = ToGrayScale(img)
     # Aplicar el filtro de detección de bordes (Canny)
     edges = cv2.Canny(image, 100, 200)
@@ -155,11 +155,6 @@ def GaussianBlur(img):
     gaussian_blurred_image = cv2.GaussianBlur(img, (51, 51), 0)
 
     return gaussian_blurred_image
-
-
-def cargar_imagen(ruta):
-    """Carga una imagen en escala de grises."""
-    return cv2.imread(ruta, cv2.IMREAD_GRAYSCALE)
 
 def umbralizar_imagen(image, threshold=127):
     """Convierte la imagen en binaria mediante umbralización."""
@@ -190,3 +185,4 @@ def calcular_caracteristicas(contours):
     areas = [cv2.contourArea(c) for c in contours]
     perimeters = [cv2.arcLength(c, True) for c in contours]
     return areas, perimeters
+
