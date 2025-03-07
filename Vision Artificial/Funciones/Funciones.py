@@ -186,3 +186,9 @@ def calcular_caracteristicas(contours):
     perimeters = [cv2.arcLength(c, True) for c in contours]
     return areas, perimeters
 
+
+def aplicar_gradiente(image, kernel_size=(3, 3)):
+    """Aplica la operación morfológica de gradiente para resaltar los bordes."""
+    kernel = np.ones(kernel_size, np.uint8)
+    return cv2.morphologyEx(image, cv2.MORPH_GRADIENT, kernel)
+
