@@ -186,9 +186,33 @@ def calcular_caracteristicas(contours):
     perimeters = [cv2.arcLength(c, True) for c in contours]
     return areas, perimeters
 
-
 def aplicar_gradiente(image, kernel_size=(3, 3)):
     """Aplica la operación morfológica de gradiente para resaltar los bordes."""
     kernel = np.ones(kernel_size, np.uint8)
     return cv2.morphologyEx(image, cv2.MORPH_GRADIENT, kernel)
 
+def detectar_bordes_Canny(image, min_val=100, max_val=200):
+    return cv2.Canny(image, min_val, max_val)
+
+def segmentacion_kmeans(image, k=2, criterios=(cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)):
+    Z = image.reshape((-1, 3))
+    Z = np.float32(Z)
+    _, label, center = cv2.kmeans(Z, k, None, criterios, 10, cv2.KMEANS_RANDOM_CENTERS)
+    center = np.uint8(center)
+    res = center[label.flatten()]
+    return res.reshape(image.shape)
+
+def segmentacion_watershed(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    thresholded = umbralizar_imagen(gray)
+    dist_transform = cv2.distanceTransform(thresholded, cv2.DIST_L2, 5)
+    _, markers = cv2.threshold(dist_transform, 0.7 * dist_transform.max(), 255, 0)
+    markers = np.int32(markers)
+    cv2.watershed(image, markers)
+    image[markers == -1] = [0, 0, 255]
+    return image
+
+def umbralizacion_adaptativa(image, metodo=cv2.ADAPTIVE_THRESH_MEAN_C, tipo=cv2.THRESH_BINARY, block_size=11, constante=2):
+    return cv2.adaptiveThreshold(image, 255, metodo, tipo, block_size, constante)
+
+#Comentario
