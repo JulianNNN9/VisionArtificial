@@ -69,6 +69,8 @@ def mostrar_imagenes(imagenes, nombres, titulo):
     num_imagenes = len(imagenes)
     fig, axes = plt.subplots(1, num_imagenes, figsize=(5 * num_imagenes, 5))
     manager = plt.get_current_fig_manager()
+
+    #intentar poner en pantalla completa
     try:
         manager.window.state('zoomed')  # Para TkAgg (Windows y algunos sistemas)
     except AttributeError:
@@ -77,13 +79,15 @@ def mostrar_imagenes(imagenes, nombres, titulo):
         except AttributeError:
             pass
     
+    #Si solo hay una imagen se castea a lista para poderla iterar
     if num_imagenes == 1:
         axes = [axes]
     
-    for ax, img, nombre in zip(axes, imagenes, nombres):
+    for ax, img, nombre in zip(axes, imagenes, nombres): #agrupa elementos de las tres listas por posición en una sola estructura iterable
+        #Si la imagen es en escala de grises
         if len(img.shape) == 2:
             ax.imshow(img, cmap='gray')
-        else:
+        else: #Si la imagen es a color
             ax.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
         ax.set_title(nombre, fontsize=12, fontweight='bold')
         ax.axis('off')
@@ -129,6 +133,6 @@ def obtener_imagenes_de_carpeta(ruta_carpeta):
 
 
 # Cargar imágenes de prueba
-imagenes = obtener_imagenes_de_carpeta("VisionArtificial\Vision Artificial\Parcial 1\images")
+imagenes = obtener_imagenes_de_carpeta("Parcial 1\images")
 procesar_imagenes(imagenes)
 
