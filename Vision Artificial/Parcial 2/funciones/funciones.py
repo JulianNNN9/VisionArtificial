@@ -1,6 +1,8 @@
 '''
 METODOS
 
+- Algoritmo Optical Flow (Flujo Óptico)
+- Algoritmo Laplaciano de Gauss (LoG)
 - Algoritmo AKAZE
 - Algoritmo SIFT
 - Algoritmo SURF
