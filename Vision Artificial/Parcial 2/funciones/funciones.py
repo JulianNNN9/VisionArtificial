@@ -1,6 +1,14 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from skimage import feature
+from skimage import img_as_ubyte
+import math
+
 '''
 METODOS
 
+- Algoritmo Momentos de Hu
 - Algoritmo Optical Flow (Flujo Óptico)
 - Algoritmo Laplaciano de Gauss (LoG)
 - Algoritmo AKAZE
@@ -32,13 +40,7 @@ METODOS
 
 '''
 
-print("a")
-
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
-
-def procesar_imagen_desde_objeto(imagen, umbral=127, suavizado=False, usar_canny=False, titulo='Imagen'):
+def momentos_de_hu(imagen, umbral=127, suavizado=False, usar_canny=False, titulo='Imagen'):
     """
     Procesa una imagen (ya cargada) para binarizar, calcular momentos y Momentos de Hu.
 
@@ -86,10 +88,38 @@ def procesar_imagen_desde_objeto(imagen, umbral=127, suavizado=False, usar_canny
 
     return hu_moments
 
+def analizar_imagen_grises(imagen: np.ndarray) -> dict:
+    """
+    Analiza una imagen en escala de grises y calcula estadísticas básicas.
 
-import cv2
-import numpy as np
-import matplotlib.pyplot as plt
+    Parámetros:
+        imagen (np.ndarray): Imagen en escala de grises como matriz NumPy.
+
+    Retorna:
+        dict: Diccionario con media, varianza, desviación estándar y entropía.
+    """
+    if imagen is None or len(imagen.shape) != 2:
+        raise ValueError("La imagen debe estar en escala de grises (matriz 2D).")
+
+    # 1. Media
+    media = np.mean(imagen)
+
+    # 2. Varianza
+    varianza = np.var(imagen)
+
+    # 3. Desviación estándar
+    desviacion_estandar = np.std(imagen)
+
+    # 4. Entropía
+    imagen_float = np.float32(imagen) + 1e-5  # Evita log(0)
+    entropia = -np.sum(imagen_float * np.log(imagen_float))
+
+    return {
+        "media": media,
+        "varianza": varianza,
+        "desviacion_estandar": desviacion_estandar,
+        "entropia": entropia
+    }
 
 def detectar_lineas(imagen, umbral_canny1=50, umbral_canny2=150, aperture_size=7, umbral_hough=150, titulo='Líneas Detectadas'):
     """
