@@ -32,9 +32,6 @@ from funciones.funciones import extraer_kaze #GRAFICA Y TEXTO
 from funciones.funciones import extraer_akaze #GRAFICA
 
 
-def procesar_imagenes(imagenes):
-    #Implementar 13 metodos a las 10 imagenes
-    print()#Borrar
 
 def mostrar_imagenes(imagenes, nombres, titulo):
     num_imagenes = len(imagenes)
