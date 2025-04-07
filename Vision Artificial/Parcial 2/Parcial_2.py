@@ -11,25 +11,25 @@ import os
 import sys
 
 #Descriptores de Textura
-from funciones.funciones import extraer_caracteristicas_hog
-from funciones.funciones import momentos_de_hu
-from funciones.funciones import metodos_estadisticos_primer_orden
-from funciones.funciones import metodos_estadisticos_segundo_orden
+from funciones.funciones import extraer_caracteristicas_hog #SOLO TEXTO
+from funciones.funciones import momentos_de_hu #GRAFICA Y TEXTO
+from funciones.funciones import metodos_estadisticos_primer_orden #SOLO TEXTO
+from funciones.funciones import metodos_estadisticos_segundo_orden #SOLO TEXTO
 
 #Detección de Bordes
-from funciones.funciones import laplaciano_de_gauss
-from funciones.funciones import flujo_optico_farneback
+from funciones.funciones import laplaciano_de_gauss #GRAFICA
+from funciones.funciones import flujo_optico_farneback #GRAFICA
 
 #Detección de Formas
-from funciones.funciones import detectar_lineas_Hough
-from funciones.funciones import detectar_circulos_Hough
-from funciones.funciones import segmentar_grabcut
+from funciones.funciones import detectar_lineas_Hough #GRAFICA
+from funciones.funciones import detectar_circulos_Hough #GRAFICA Y TEXTO
+from funciones.funciones import segmentar_grabcut #GRAFICA
 
 #Métodos Avanzados de Características
-from funciones.funciones import aplicar_sift_con_preprocesamiento
-from funciones.funciones import extraer_orb
-from funciones.funciones import extraer_kaze
-from funciones.funciones import extraer_akaze
+from funciones.funciones import aplicar_sift_con_preprocesamiento #GRAFICA
+from funciones.funciones import extraer_orb #GRAFICA Y TEXTO
+from funciones.funciones import extraer_kaze #GRAFICA Y TEXTO
+from funciones.funciones import extraer_akaze #GRAFICA
 
 
 def procesar_imagenes(imagenes):
