@@ -34,7 +34,7 @@ from funciones.funciones import extraer_kaze #GRAFICA Y TEXTO - RETORNA DICCIONA
 from funciones.funciones import extraer_akaze #GRAFICA Y TEXTO - RETORNA DICCIONARIO CON IMAGEN Y TEXTO
 
 def procesar_imagenes(imagenes):
-     for idx, img in enumerate(imagenes):
+    for idx, img in enumerate(imagenes):
         # Convertir a escala de grises si es necesario
         if len(img.shape) == 3:
             img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -56,18 +56,35 @@ def procesar_imagenes(imagenes):
         resultado_grabcut = segmentar_grabcut(img, rect)
         imagen_grabcut = resultado_grabcut["imagen_segmentada"]
 
-        # Secciones organizadas (solo 2: Laplaciano y Formas)
+        # 5. Métodos avanzados (todos retornan diccionario con imagen visual)
+        sift = aplicar_sift_con_preprocesamiento(img)
+        orb = extraer_orb(img)
+        kaze = extraer_kaze(img)
+        akaze = extraer_akaze(img)
+
+        imagen_sift = sift["imagen_con_keypoints"]
+        imagen_orb = orb["imagen_con_keypoints"]
+        imagen_kaze = kaze["imagen_con_keypoints"]
+        imagen_akaze = akaze["imagen_con_keypoints"]
+
+        # Secciones organizadas
         secciones = [
             ([laplaciano], ["laplaciano_de_gauss"], "Detección de Bordes - Laplaciano de Gauss"),
             (
                 [imagen_lineas, imagen_circulos, imagen_grabcut],
                 ["detectar_lineas_Hough", "detectar_circulos_Hough", "segmentar_grabcut"],
                 "Detección y Segmentación de Formas"
+            ),
+            (
+                [imagen_sift, imagen_orb, imagen_kaze, imagen_akaze],
+                ["SIFT", "ORB", "KAZE", "AKAZE"],
+                "Detección de Características - Métodos Avanzados"
             )
         ]
 
         for imagenes_seccion, nombres, titulo in secciones:
             mostrar_imagenes(imagenes_seccion, nombres, titulo)
+
 
 def guardar_en_csv(imagenes):
     # Crear archivo CSV con timestamp
@@ -254,6 +271,6 @@ def obtener_imagenes_de_carpeta(ruta_carpeta):
 
 
 # Cargar imágenes de prueba
-imagenes = obtener_imagenes_de_carpeta("Parcial 2/images")
-#procesar_imagenes(imagenes)
-guardar_en_csv(imagenes)
+imagenes = obtener_imagenes_de_carpeta("VisionArtificial\\Vision Artificial\\Parcial 2\\images")
+procesar_imagenes(imagenes)
+#guardar_en_csv(imagenes)
