@@ -501,10 +501,7 @@ def detectar_lineas_Hough(imagen, umbral_canny1=50, umbral_canny2=150, aperture_
             y2 = int(rho * np.sin(theta) - 1000 * (np.cos(theta)))
             cv2.line(imagen_color, (x1, y1), (x2, y2), (0, 0, 255), 2)
 
-    plt.imshow(edges, cmap='gray')
-    plt.title(titulo)
-    plt.axis('off')
-    plt.show()
+ 
 
     return edges, lines
 
@@ -547,13 +544,6 @@ def detectar_circulos_Hough(imagen, umbral_binario=107, usar_umbral=True,
             cv2.circle(imagen_color, (x, y), r, (0, 255, 0), 4)
             cv2.circle(imagen_color, (x, y), 2, (0, 0, 255), 3)
 
-    plt.imshow(imagen_color, cmap='gray')
-    plt.title(titulo)
-    plt.axis('off')
-    plt.show()
-
-    print(circles)
-    print("Los dos primeros números son las coordenadas (x, y) del centro del círculo.")
-    print("El tercer número es el radio del círculo.")
+   
 
     return imagen_color, circles
