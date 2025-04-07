@@ -66,36 +66,40 @@ def momentos_de_hu(imagen, umbral=127, suavizado=False, usar_canny=False):
 
     return hu_moments
 
-
-def aplicar_sift_con_preprocesamiento(ruta_imagen):
+def aplicar_sift_con_preprocesamiento(imagen: np.ndarray) -> dict:
     """
     Aplica el algoritmo SIFT a una imagen con preprocesamiento mediante
     filtros gaussianos y diferencia de gaussianas.
 
     Parámetros:
-        ruta_imagen (str): Ruta de la imagen a procesar.
+        imagen (np.ndarray): Imagen a procesar (BGR o escala de grises)
 
     Retorna:
-        keypoints: Lista de puntos clave detectados.
-        descriptors: Matriz de descriptores asociados a cada punto clave.
+        dict: Diccionario con:
+            - 'imagen_con_keypoints': Imagen con puntos clave dibujados (np.ndarray)
+            - 'keypoints': Lista de puntos clave detectados
+            - 'descriptors': Matriz de descriptores asociados
     """
-    # 1. Cargar la imagen en escala de grises
-    imagen = cv2.imread(ruta_imagen, cv2.IMREAD_GRAYSCALE)
-    if imagen is None:
-        raise ValueError("No se pudo cargar la imagen. Verifique la ruta.")
+    # Convertir a escala de grises si es necesario
+    if len(imagen.shape) == 3 and imagen.shape[2] == 3:
+        imagen_gris = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
+    elif len(imagen.shape) == 2:
+        imagen_gris = imagen
+    else:
+        raise ValueError("Formato de imagen no válido. Se espera imagen BGR o escala de grises.")
 
-    # 2. Definir valores de sigma para el filtro Gaussiano
+    # 1. Definir valores de sigma para el filtro Gaussiano
     sigma_values = [0.5, 2, 5.5, 8, 11, 15.5, 20, 24.5]
     imagenes_filtradas = {}
 
-    # 3. Aplicar el filtro gaussiano con distintos valores de sigma
+    # 2. Aplicar el filtro gaussiano con distintos valores de sigma
     for sigma in sigma_values:
         ksize = int(2 * (sigma * 3) + 1)
         ksize += 1 if ksize % 2 == 0 else 0  # Asegurar impar
-        imagen_filtrada = cv2.GaussianBlur(imagen, (ksize, ksize), sigma)
+        imagen_filtrada = cv2.GaussianBlur(imagen_gris, (ksize, ksize), sigma)
         imagenes_filtradas[sigma] = imagen_filtrada
 
-    # 4. Calcular diferencias de gaussianas (DoG)
+    # 3. Calcular diferencias de gaussianas (DoG)
     diferencias_dog = []
     for i in range(len(sigma_values) - 1):
         sigma1 = sigma_values[i]
@@ -103,24 +107,25 @@ def aplicar_sift_con_preprocesamiento(ruta_imagen):
         dog = cv2.absdiff(imagenes_filtradas[sigma1], imagenes_filtradas[sigma2])
         diferencias_dog.append(dog)
 
-    # 5. Crear el detector SIFT
+    # 4. Crear el detector SIFT
     sift = cv2.SIFT_create()
 
-    # 6. Aplicar SIFT sobre la imagen original
-    keypoints, descriptors = sift.detectAndCompute(imagen, None)
+    # 5. Aplicar SIFT sobre la imagen original
+    keypoints, descriptors = sift.detectAndCompute(imagen_gris, None)
 
-    # 7. Dibujar los puntos clave
-    imagen_con_keypoints = cv2.drawKeypoints(imagen, keypoints, None,
-                                             flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    # 6. Dibujar los puntos clave
+    imagen_con_keypoints = cv2.drawKeypoints(
+        imagen_gris, 
+        keypoints, 
+        None,
+        flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS
+    )
 
-    # 8. Mostrar resultados
-    plt.figure(figsize=(8, 6))
-    plt.title("Puntos clave detectados con SIFT")
-    plt.imshow(imagen_con_keypoints, cmap='gray')
-    plt.axis('off')
-    plt.show()
-
-    return keypoints, descriptors
+    return {
+        "imagen_con_keypoints": imagen_con_keypoints,
+        "keypoints": keypoints,
+        "descriptors": descriptors
+    }
 
 def flujo_optico_farneback(frame1: np.ndarray, frame2: np.ndarray) -> np.ndarray:
     """
