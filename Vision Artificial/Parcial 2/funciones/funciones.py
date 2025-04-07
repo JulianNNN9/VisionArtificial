@@ -43,7 +43,7 @@ Detección de Formas
 
 Métodos Avanzados de Características
 ├── SIFT
-├── SURF
+├── SURF (No se puede implementar)
 ├── ORB
 ├── KAZE
 └── AKAZE
