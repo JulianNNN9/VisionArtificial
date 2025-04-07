@@ -107,56 +107,79 @@ def guardar_en_csv(imagenes):
             row_data = {"imagen_num": idx}
             
             # 1. Descriptores de Textura --------------------------------------
-            # HOG - Retorna array (solo guardamos forma)
-            hog_features = extraer_caracteristicas_hog(img)
-            row_data["hog_vector_shape"] = str(hog_features.shape)
+            try:
+                hog_features = extraer_caracteristicas_hog(img)
+                row_data["hog_vector_shape"] = str(hog_features.shape)
+            except Exception as e:
+                row_data["hog_vector_shape"] = f"Error: {str(e)}"
             
-            # Momentos de Hu - Retorna array de momentos
-            hu_moments = momentos_de_hu(img_gray)
-            row_data["momentos_hu"] = str([float(f"{m[0]:.4e}") for m in hu_moments])
+            try:
+                hu_moments = momentos_de_hu(img_gray)
+                row_data["momentos_hu"] = str([float(f"{m[0]:.4e}") for m in hu_moments])
+            except Exception as e:
+                row_data["momentos_hu"] = f"Error: {str(e)}"
             
-            # Estadísticos primer orden - Diccionario
-            stats_primer_orden = metodos_estadisticos_primer_orden(img_gray)
-            row_data["estadisticos_primer_orden"] = str(stats_primer_orden)
+            try:
+                stats_primer_orden = metodos_estadisticos_primer_orden(img_gray)
+                row_data["estadisticos_primer_orden"] = str(stats_primer_orden)
+            except Exception as e:
+                row_data["estadisticos_primer_orden"] = f"Error: {str(e)}"
             
-            # Estadísticos segundo orden - Diccionario
-            stats_segundo_orden = metodos_estadisticos_segundo_orden(img_gray)
-            row_data["estadisticos_segundo_orden"] = str(stats_segundo_orden)
+            try:
+                stats_segundo_orden = metodos_estadisticos_segundo_orden(img_gray)
+                row_data["estadisticos_segundo_orden"] = str(stats_segundo_orden)
+            except Exception as e:
+                row_data["estadisticos_segundo_orden"] = f"Error: {str(e)}"
             
             # 2. Detección de Formas ------------------------------------------
-            # Líneas Hough - Retorna (edges, lines) -> solo nos interesa lines
-            _, lines = detectar_lineas_Hough(img_gray)
-            row_data["lineas_hough_count"] = len(lines) if lines is not None else 0
+            try:
+                _, lines = detectar_lineas_Hough(img_gray)
+                row_data["lineas_hough_count"] = len(lines) if lines is not None else 0
+            except Exception as e:
+                row_data["lineas_hough_count"] = f"Error: {str(e)}"
             
-            # Círculos Hough - Retorna (imagen, circles) -> solo circles
-            _, circles = detectar_circulos_Hough(img_gray)
-            if circles is not None:
-                row_data["circulos_hough_data"] = str([(x, y, r) for (x, y, r) in circles])
-            else:
-                row_data["circulos_hough_data"] = "None"
+            try:
+                _, circles = detectar_circulos_Hough(img_gray)
+                if circles is not None:
+                    row_data["circulos_hough_data"] = str([(x, y, r) for (x, y, r) in circles])
+                else:
+                    row_data["circulos_hough_data"] = "None"
+            except Exception as e:
+                row_data["circulos_hough_data"] = f"Error: {str(e)}"
             
             # 3. Métodos Avanzados --------------------------------------------
-            # SIFT - Necesita ruta de archivo
-            with tempfile.NamedTemporaryFile(suffix=".jpg", delete=True) as tmp:
-                cv2.imwrite(tmp.name, img)
-                sift_kp, sift_desc = aplicar_sift_con_preprocesamiento(tmp.name)
-                row_data["sift_keypoints_count"] = len(sift_kp) if sift_kp is not None else 0
-                row_data["sift_descriptors_shape"] = str(sift_desc.shape) if sift_desc is not None else "None"
+            # SIFT modificado que recibe imagen directamente
+            try:
+                sift_result = aplicar_sift_con_preprocesamiento(img)
+                row_data["sift_keypoints_count"] = len(sift_result["keypoints"]) if sift_result["keypoints"] is not None else 0
+                row_data["sift_descriptors_shape"] = str(sift_result["descriptors"].shape) if sift_result["descriptors"] is not None else "None"
+            except Exception as e:
+                row_data["sift_keypoints_count"] = f"Error: {str(e)}"
+                row_data["sift_descriptors_shape"] = f"Error: {str(e)}"
             
-            # ORB - Diccionario con keypoints y descriptors
-            orb_result = extraer_orb(img)
-            row_data["orb_keypoints_count"] = len(orb_result["keypoints"])
-            row_data["orb_descriptors_shape"] = str(orb_result["descriptors"].shape) if orb_result["descriptors"] is not None else "None"
+            try:
+                orb_result = extraer_orb(img)
+                row_data["orb_keypoints_count"] = len(orb_result["keypoints"])
+                row_data["orb_descriptors_shape"] = str(orb_result["descriptors"].shape) if orb_result["descriptors"] is not None else "None"
+            except Exception as e:
+                row_data["orb_keypoints_count"] = f"Error: {str(e)}"
+                row_data["orb_descriptors_shape"] = f"Error: {str(e)}"
             
-            # KAZE - Diccionario con keypoints y descriptors
-            kaze_result = extraer_kaze(img)
-            row_data["kaze_keypoints_count"] = len(kaze_result["keypoints"])
-            row_data["kaze_descriptors_shape"] = str(kaze_result["descriptors"].shape) if kaze_result["descriptors"] is not None else "None"
+            try:
+                kaze_result = extraer_kaze(img)
+                row_data["kaze_keypoints_count"] = len(kaze_result["keypoints"])
+                row_data["kaze_descriptors_shape"] = str(kaze_result["descriptors"].shape) if kaze_result["descriptors"] is not None else "None"
+            except Exception as e:
+                row_data["kaze_keypoints_count"] = f"Error: {str(e)}"
+                row_data["kaze_descriptors_shape"] = f"Error: {str(e)}"
             
-            # AKAZE - Diccionario con keypoints y descriptors
-            akaze_result = extraer_akaze(img)
-            row_data["akaze_keypoints_count"] = len(akaze_result["keypoints"])
-            row_data["akaze_descriptors_shape"] = str(akaze_result["descriptors"].shape) if akaze_result["descriptors"] is not None else "None"
+            try:
+                akaze_result = extraer_akaze(img)
+                row_data["akaze_keypoints_count"] = len(akaze_result["keypoints"])
+                row_data["akaze_descriptors_shape"] = str(akaze_result["descriptors"].shape) if akaze_result["descriptors"] is not None else "None"
+            except Exception as e:
+                row_data["akaze_keypoints_count"] = f"Error: {str(e)}"
+                row_data["akaze_descriptors_shape"] = f"Error: {str(e)}"
             
             # Escribir fila en CSV
             writer.writerow(row_data)
@@ -232,5 +255,5 @@ def obtener_imagenes_de_carpeta(ruta_carpeta):
 
 # Cargar imágenes de prueba
 imagenes = obtener_imagenes_de_carpeta("Parcial 2/images")
-procesar_imagenes(imagenes)
-#guardar_en_csv(imagenes)
+#procesar_imagenes(imagenes)
+guardar_en_csv(imagenes)
