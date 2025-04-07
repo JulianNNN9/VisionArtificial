@@ -101,5 +101,5 @@ def obtener_imagenes_de_carpeta(ruta_carpeta):
 
 
 # Cargar imágenes de prueba
-imagenes = obtener_imagenes_de_carpeta("Parcial 1\images")
+imagenes = obtener_imagenes_de_carpeta("VisionArtificial\\Vision Artificial\\Parcial 2\\images")
 procesar_imagenes(imagenes)
