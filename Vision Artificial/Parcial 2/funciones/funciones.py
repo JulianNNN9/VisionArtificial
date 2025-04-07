@@ -67,40 +67,35 @@ def momentos_de_hu(imagen, umbral=127, suavizado=False, usar_canny=False):
     return hu_moments
 
 
-def aplicar_sift_con_preprocesamiento(imagen: np.ndarray) -> dict:
+def aplicar_sift_con_preprocesamiento(ruta_imagen):
     """
     Aplica el algoritmo SIFT a una imagen con preprocesamiento mediante
     filtros gaussianos y diferencia de gaussianas.
 
     Parámetros:
-        imagen (np.ndarray): Imagen a procesar en formato BGR o escala de grises.
+        ruta_imagen (str): Ruta de la imagen a procesar.
 
     Retorna:
-        dict: Diccionario que contiene:
-            - 'imagen_con_keypoints': Imagen con los puntos clave dibujados
-            - 'keypoints': Lista de puntos clave detectados
-            - 'descriptors': Matriz de descriptores asociados
+        keypoints: Lista de puntos clave detectados.
+        descriptors: Matriz de descriptores asociados a cada punto clave.
     """
-    # Convertir a escala de grises si es necesario
-    if len(imagen.shape) == 3 and imagen.shape[2] == 3:
-        imagen_gris = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
-    elif len(imagen.shape) == 2:
-        imagen_gris = imagen
-    else:
-        raise ValueError("Formato de imagen no válido. Se espera imagen BGR o escala de grises.")
+    # 1. Cargar la imagen en escala de grises
+    imagen = cv2.imread(ruta_imagen, cv2.IMREAD_GRAYSCALE)
+    if imagen is None:
+        raise ValueError("No se pudo cargar la imagen. Verifique la ruta.")
 
-    # 1. Definir valores de sigma para el filtro Gaussiano
+    # 2. Definir valores de sigma para el filtro Gaussiano
     sigma_values = [0.5, 2, 5.5, 8, 11, 15.5, 20, 24.5]
     imagenes_filtradas = {}
 
-    # 2. Aplicar el filtro gaussiano con distintos valores de sigma
+    # 3. Aplicar el filtro gaussiano con distintos valores de sigma
     for sigma in sigma_values:
         ksize = int(2 * (sigma * 3) + 1)
         ksize += 1 if ksize % 2 == 0 else 0  # Asegurar impar
-        imagen_filtrada = cv2.GaussianBlur(imagen_gris, (ksize, ksize), sigma)
+        imagen_filtrada = cv2.GaussianBlur(imagen, (ksize, ksize), sigma)
         imagenes_filtradas[sigma] = imagen_filtrada
 
-    # 3. Calcular diferencias de gaussianas (DoG)
+    # 4. Calcular diferencias de gaussianas (DoG)
     diferencias_dog = []
     for i in range(len(sigma_values) - 1):
         sigma1 = sigma_values[i]
@@ -108,25 +103,70 @@ def aplicar_sift_con_preprocesamiento(imagen: np.ndarray) -> dict:
         dog = cv2.absdiff(imagenes_filtradas[sigma1], imagenes_filtradas[sigma2])
         diferencias_dog.append(dog)
 
-    # 4. Crear el detector SIFT
+    # 5. Crear el detector SIFT
     sift = cv2.SIFT_create()
 
-    # 5. Aplicar SIFT sobre la imagen original
-    keypoints, descriptors = sift.detectAndCompute(imagen_gris, None)
+    # 6. Aplicar SIFT sobre la imagen original
+    keypoints, descriptors = sift.detectAndCompute(imagen, None)
 
-    # 6. Dibujar los puntos clave
-    imagen_con_keypoints = cv2.drawKeypoints(
-        imagen_gris, 
-        keypoints, 
-        None,
-        flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS
+    # 7. Dibujar los puntos clave
+    imagen_con_keypoints = cv2.drawKeypoints(imagen, keypoints, None,
+                                             flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+
+    # 8. Mostrar resultados
+    plt.figure(figsize=(8, 6))
+    plt.title("Puntos clave detectados con SIFT")
+    plt.imshow(imagen_con_keypoints, cmap='gray')
+    plt.axis('off')
+    plt.show()
+
+    return keypoints, descriptors
+
+def flujo_optico_farneback(frame1: np.ndarray, frame2: np.ndarray) -> np.ndarray:
+    """
+    Calcula el flujo óptico entre dos imágenes utilizando el algoritmo de Farnebäck
+    y retorna una representación visual del movimiento.
+
+    Parámetros:
+        frame1 (np.ndarray): Primer fotograma en escala de grises.
+        frame2 (np.ndarray): Segundo fotograma en escala de grises.
+
+    Retorna:
+        np.ndarray: Imagen en formato BGR que visualiza la magnitud y dirección del flujo óptico.
+    """
+    if frame1 is None or frame2 is None:
+        raise ValueError("Ambos fotogramas deben estar definidos.")
+    if frame1.shape != frame2.shape:
+        raise ValueError("Las imágenes deben tener las mismas dimensiones.")
+
+    # Calcular el flujo óptico con Farnebäck
+    flow = cv2.calcOpticalFlowFarneback(
+        prev=frame1,
+        next=frame2,
+        flow=None,
+        pyr_scale=0.5,
+        levels=3,
+        winsize=15,
+        iterations=3,
+        poly_n=5,
+        poly_sigma=1.2,
+        flags=0
     )
 
-    return {
-        "imagen_con_keypoints": imagen_con_keypoints,
-        "keypoints": keypoints,
-        "descriptors": descriptors
-    }
+    # Convertir a magnitud y ángulo
+    mag, ang = cv2.cartToPolar(flow[..., 0], flow[..., 1])
+
+    # Representación HSV del flujo óptico
+    hsv = np.zeros((frame1.shape[0], frame1.shape[1], 3), dtype=np.float32)
+    hsv[..., 0] = ang * 180 / np.pi / 2         # Tono: dirección del movimiento
+    hsv[..., 1] = 1                             # Saturación máxima
+    hsv[..., 2] = cv2.normalize(mag, None, 0, 1, cv2.NORM_MINMAX)  # Brillo: magnitud
+
+    # Convertir HSV a BGR para visualización
+    hsv_uint8 = np.uint8(hsv * 255)
+    flow_rgb = cv2.cvtColor(hsv_uint8, cv2.COLOR_HSV2BGR)
+
+    return flow_rgb
 
 def laplaciano_de_gauss(imagen: np.ndarray, kernel_size: int = 5) -> np.ndarray:
     """

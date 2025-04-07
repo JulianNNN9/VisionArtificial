@@ -33,6 +33,42 @@ from funciones.funciones import extraer_orb #GRAFICA Y TEXTO - RETORNA DICCIONAR
 from funciones.funciones import extraer_kaze #GRAFICA Y TEXTO - RETORNA DICCIONARIO CON IMAGEN Y TEXTO
 from funciones.funciones import extraer_akaze #GRAFICA Y TEXTO - RETORNA DICCIONARIO CON IMAGEN Y TEXTO
 
+def procesar_imagenes(imagenes):
+     for idx, img in enumerate(imagenes):
+        # Convertir a escala de grises si es necesario
+        if len(img.shape) == 3:
+            img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        else:
+            img_gray = img
+
+        # 1. Laplaciano de Gauss
+        laplaciano = laplaciano_de_gauss(img)
+
+        # 2. Detección de líneas
+        imagen_lineas, _ = detectar_lineas_Hough(img_gray)
+
+        # 3. Detección de círculos
+        imagen_circulos, _ = detectar_circulos_Hough(img_gray)
+
+        # 4. Segmentación con GrabCut
+        alto, ancho = img.shape[:2]
+        rect = (int(ancho * 0.25), int(alto * 0.25), int(ancho * 0.5), int(alto * 0.5))
+        resultado_grabcut = segmentar_grabcut(img, rect)
+        imagen_grabcut = resultado_grabcut["imagen_segmentada"]
+
+        # Secciones organizadas (solo 2: Laplaciano y Formas)
+        secciones = [
+            ([laplaciano], ["laplaciano_de_gauss"], "Detección de Bordes - Laplaciano de Gauss"),
+            (
+                [imagen_lineas, imagen_circulos, imagen_grabcut],
+                ["detectar_lineas_Hough", "detectar_circulos_Hough", "segmentar_grabcut"],
+                "Detección y Segmentación de Formas"
+            )
+        ]
+
+        for imagenes_seccion, nombres, titulo in secciones:
+            mostrar_imagenes(imagenes_seccion, nombres, titulo)
+
 def guardar_en_csv(imagenes):
     # Crear archivo CSV con timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -196,4 +232,5 @@ def obtener_imagenes_de_carpeta(ruta_carpeta):
 
 # Cargar imágenes de prueba
 imagenes = obtener_imagenes_de_carpeta("Parcial 2/images")
-guardar_en_csv(imagenes)
+procesar_imagenes(imagenes)
+#guardar_en_csv(imagenes)
