@@ -11,25 +11,25 @@ import os
 import sys
 
 #Descriptores de Textura
-from funciones.funciones import extraer_caracteristicas_hog #SOLO TEXTO
-from funciones.funciones import momentos_de_hu #GRAFICA Y TEXTO
-from funciones.funciones import metodos_estadisticos_primer_orden #SOLO TEXTO
-from funciones.funciones import metodos_estadisticos_segundo_orden #SOLO TEXTO
+from funciones.funciones import extraer_caracteristicas_hog #SOLO TEXTO - RETORNA ARRAY
+from funciones.funciones import momentos_de_hu #SOLO TEXTO - RETORNA TEXTO
+from funciones.funciones import metodos_estadisticos_primer_orden #SOLO TEXTO - RETORNA DICCIONARIO CON TEXTO
+from funciones.funciones import metodos_estadisticos_segundo_orden #SOLO TEXTO - RETORNA DICCIONARIO CON TEXTO
 
 #Detección de Bordes
-from funciones.funciones import laplaciano_de_gauss #GRAFICA
-from funciones.funciones import flujo_optico_farneback #GRAFICA
+from funciones.funciones import laplaciano_de_gauss #GRAFICA - RETORNA IMAGEN 
+from funciones.funciones import flujo_optico_farneback #GRAFICA - RETORNA IMAGEN
 
 #Detección de Formas
-from funciones.funciones import detectar_lineas_Hough #GRAFICA
-from funciones.funciones import detectar_circulos_Hough #GRAFICA Y TEXTO
-from funciones.funciones import segmentar_grabcut #GRAFICA
+from funciones.funciones import detectar_lineas_Hough #GRAFICA - RETORNA IMAGEN Y TEXTO
+from funciones.funciones import detectar_circulos_Hough #GRAFICA Y TEXTO - RETORNA IMAGEN Y TEXTO
+from funciones.funciones import segmentar_grabcut #GRAFICA - RETORNA DICCIONARIO CON IMAGEN Y MASCARA
 
 #Métodos Avanzados de Características
-from funciones.funciones import aplicar_sift_con_preprocesamiento #GRAFICA
-from funciones.funciones import extraer_orb #GRAFICA Y TEXTO
-from funciones.funciones import extraer_kaze #GRAFICA Y TEXTO
-from funciones.funciones import extraer_akaze #GRAFICA
+from funciones.funciones import aplicar_sift_con_preprocesamiento #GRAFICA - IMPRIME IMAGEN Y RETORNA TEXTO
+from funciones.funciones import extraer_orb #GRAFICA Y TEXTO - RETORNA DICCIONARIO CON IMAGEN Y TEXTO
+from funciones.funciones import extraer_kaze #GRAFICA Y TEXTO - RETORNA DICCIONARIO CON IMAGEN Y TEXTO
+from funciones.funciones import extraer_akaze #GRAFICA Y TEXTO - RETORNA DICCIONARIO CON IMAGEN Y TEXTO
 
 
 
