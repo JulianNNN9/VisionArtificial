@@ -95,8 +95,10 @@ def procesar_imagenes(imagenes):
     resultados_kmeans = []
     resultados_bordes_canny = []
     resultados_sharpen = []
+    resultados_histograma_color = []
+    resultados_tonalidades = []
 
-    # Procesar cada imagen
+     # Procesar cada imagen
     for img_path in imagenes:
         # Leer la imagen
         image = cv2.imread(img_path)
@@ -148,6 +150,14 @@ def procesar_imagenes(imagenes):
         # 12. Filtro de agudización
         sharpen_result = SharpenImage(image)
         resultados_sharpen.append(sharpen_result)
+        
+        # 13. Calcular histograma de color
+        histograma_result = calcular_histograma_color(image)
+        resultados_histograma_color.append(histograma_result)
+        
+        # 14. Detectar tonalidad
+        tonalidad_result = detectar_tonalidades(image)
+        resultados_tonalidades.append(tonalidad_result)
     
     # Guardar los resultados en archivos CSV
     guardar_resultados_en_csv(resultados_hog, "HOG")
@@ -162,6 +172,8 @@ def procesar_imagenes(imagenes):
     guardar_resultados_en_csv(resultados_kmeans, "KMeans")
     guardar_resultados_en_csv(resultados_bordes_canny, "Bordes_Canny")
     guardar_resultados_en_csv(resultados_sharpen, "SharpenImage")
+    guardar_resultados_en_csv(resultados_histograma_color, "Histograma_Color")
+    guardar_resultados_en_csv(resultados_tonalidades, "Tonalidades")
 
 # Cargar imágenes de prueba
 imagenes = obtener_imagenes_de_carpeta("VisionArtificial\\Vision Artificial\\Parcial 2\\images")
