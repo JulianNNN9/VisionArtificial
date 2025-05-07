@@ -17,7 +17,7 @@ import numpy as np
 import csv
 import os
 from datetime import datetime
-from .funciones import (
+from funciones import (
     extraer_caracteristicas_hog,
     metodos_estadisticos_primer_orden,
     momentos_de_hu,
