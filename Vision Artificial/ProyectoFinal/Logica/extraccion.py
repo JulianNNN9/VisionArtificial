@@ -17,6 +17,22 @@ import numpy as np
 import csv
 import os
 from datetime import datetime
+from .funciones import (
+    extraer_caracteristicas_hog,
+    metodos_estadisticos_primer_orden,
+    momentos_de_hu,
+    laplaciano_de_gauss,
+    detectar_circulos_Hough,
+    segmentar_grabcut,
+    extraer_orb,
+    ToGrayScale,
+    umbralizacion_adaptativa,
+    segmentacion_kmeans,
+    detectar_bordes_Canny,
+    SharpenImage,
+    calcular_histograma_color,
+    detectar_tonalidades
+)
 
 
 def obtener_imagenes_de_carpeta(ruta_carpeta):
