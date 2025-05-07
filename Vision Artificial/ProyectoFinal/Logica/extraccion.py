@@ -18,7 +18,6 @@ import csv
 import os
 from datetime import datetime
 from funciones import (
-    extraer_caracteristicas_hog,
     metodos_estadisticos_primer_orden,
     momentos_de_hu,
     laplaciano_de_gauss,
@@ -101,41 +100,37 @@ def guardar_resultados_en_csv(resultados, nombre_funcion):
     with open(csv_filename, mode='w', newline='') as file:
         writer = csv.writer(file)
         
-        # Verificar si hay resultados
         if not resultados or len(resultados) == 0:
             print(f"No hay resultados para guardar en {nombre_funcion}")
             return
             
-        # Determinar el tipo de resultado y escribir los encabezados apropiados
         if isinstance(resultados[0], dict):
             # Para resultados tipo diccionario (como estadísticos)
-            headers = ["Imagen"] + list(resultados[0].keys())
+            headers = ["Imagen"] + list(resultados[0].keys()) + ["Clase"]
             writer.writerow(headers)
             for i, resultado in enumerate(resultados):
-                row = [f"Imagen_{i+1}"] + list(resultado.values())
+                clase = 0 if i < 4 else (1 if i < 8 else 2)
+                row = [f"Imagen_{i+1}"] + list(resultado.values()) + [clase]
                 writer.writerow(row)
         
         elif isinstance(resultados[0], np.ndarray):
-            # Para resultados tipo array
             try:
-                # Convertir a lista si es necesario
                 first_result = resultados[0].tolist() if isinstance(resultados[0], np.ndarray) else resultados[0]
                 
-                # Crear encabezados basados en la longitud del primer resultado
                 if isinstance(first_result, list):
-                    headers = ["Imagen"] + [f"Valor_{i}" for i in range(len(first_result))]
+                    headers = ["Imagen"] + [f"Valor_{i}" for i in range(len(first_result))] + ["Clase"]
                 else:
-                    headers = ["Imagen", "Valor"]
+                    headers = ["Imagen", "Valor", "Clase"]
                 
                 writer.writerow(headers)
                 
-                # Escribir cada fila
                 for i, resultado in enumerate(resultados):
+                    clase = 0 if i < 4 else (1 if i < 8 else 2)
                     valores = resultado.tolist() if isinstance(resultado, np.ndarray) else [resultado]
                     if isinstance(valores, list):
-                        row = [f"Imagen_{i+1}"] + valores
+                        row = [f"Imagen_{i+1}"] + valores + [clase]
                     else:
-                        row = [f"Imagen_{i+1}", valores]
+                        row = [f"Imagen_{i+1}", valores, clase]
                     writer.writerow(row)
             
             except Exception as e:
@@ -143,10 +138,10 @@ def guardar_resultados_en_csv(resultados, nombre_funcion):
                 return
         
         else:
-            # Para resultados simples (números)
-            writer.writerow(["Imagen", "Valor"])
+            writer.writerow(["Imagen", "Valor", "Clase"])
             for i, resultado in enumerate(resultados):
-                writer.writerow([f"Imagen_{i+1}", resultado])
+                clase = 0 if i < 4 else (1 if i < 8 else 2)
+                writer.writerow([f"Imagen_{i+1}", resultado, clase])
     
     print(f"Guardado {nombre_funcion} en {csv_filename}")
 
@@ -158,7 +153,6 @@ def procesar_imagenes(imagenes):
     :param imagenes: Lista de imágenes (rutas de imágenes) a procesar.
     """
     # Resultados de cada función
-    resultados_hog = []
     resultados_momentos_hu = []
     resultados_estadisticos = []
     resultados_laplaciano = []
@@ -175,10 +169,6 @@ def procesar_imagenes(imagenes):
 
      # Procesar cada imagen
     for image in imagenes:
-        
-        # 1. Extraer características HOG
-        hog_result = extraer_caracteristicas_hog(image)
-        resultados_hog.append(hog_result)
         
         # 2. Métodos estadísticos primer orden
         estadisticos_result = metodos_estadisticos_primer_orden(image)
@@ -233,7 +223,6 @@ def procesar_imagenes(imagenes):
         resultados_tonalidades.append(tonalidad_result)
     
     # Guardar los resultados en archivos CSV
-    guardar_resultados_en_csv(resultados_hog, "HOG")
     guardar_resultados_en_csv(resultados_momentos_hu, "Momentos_Hu")
     guardar_resultados_en_csv(resultados_estadisticos, "Estadisticos_Primer_Orden")
     guardar_resultados_en_csv(resultados_laplaciano, "Laplaciano_Gauss")
