@@ -42,53 +42,112 @@ def obtener_imagenes_de_carpeta(ruta_carpeta):
     :param ruta_carpeta: str, ruta de la carpeta donde están las imágenes.
     :return: list, lista de imágenes en formato numpy.ndarray.
     """
-    # Define las extensiones de archivos que se considerarán imágenes
     extensiones_imagenes = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp"}
-    imagenes = []  # Lista donde se almacenarán las imágenes cargadas
+    imagenes = []
 
-    # Verificar si la carpeta existe
-    if not os.path.isdir(ruta_carpeta):  # Comprueba si la ruta proporcionada es un directorio válido
-        print(f"La ruta '{ruta_carpeta}' no es una carpeta válida.")  # Mensaje de error si no existe
-        return []  # Retorna una lista vacía
+    try:
+        # Normalize path
+        ruta_carpeta = os.path.normpath(ruta_carpeta)
+        print(f"Scanning directory: {ruta_carpeta}")
 
-    # Recorrer los archivos dentro de la carpeta
-    for archivo in os.listdir(ruta_carpeta):  # Itera sobre todos los archivos en la carpeta
-        ruta_imagen = os.path.join(ruta_carpeta, archivo)  # Obtiene la ruta completa del archivo
-        
-        # Verificar si la extensión del archivo está en la lista de imágenes permitidas
-        if os.path.splitext(archivo)[1].lower() in extensiones_imagenes:
-            img = cv2.imread(ruta_imagen)  # Lee la imagen con OpenCV
+        if not os.path.isdir(ruta_carpeta):
+            print(f"Error: '{ruta_carpeta}' is not a valid directory")
+            return []
+
+        for archivo in os.listdir(ruta_carpeta):
+            try:
+                # Get full path using proper path joining
+                ruta_imagen = os.path.join(ruta_carpeta, archivo)
+                
+                # Check file extension
+                if os.path.splitext(archivo)[1].lower() in extensiones_imagenes:
+                    print(f"Attempting to load: {archivo}")
+                    img = cv2.imdecode(
+                        np.fromfile(ruta_imagen, dtype=np.uint8), 
+                        cv2.IMREAD_COLOR
+                    )
+                    
+                    if img is not None:
+                        print(f"Successfully loaded: {archivo}")
+                        imagenes.append(img)
+                    else:
+                        print(f"Failed to load image: {archivo}")
             
-            if img is not None:  # Verifica que la imagen se haya cargado correctamente
-                imagenes.append(img)  # Agrega la imagen a la lista
-            else:
-                print(f"Advertencia: No se pudo cargar la imagen {archivo}")  # Mensaje si la imagen no se carga
+            except Exception as e:
+                print(f"Error processing {archivo}: {str(e)}")
+                continue
 
-    return imagenes  # Retorna la lista de imágenes cargadas
+        print(f"Total images loaded: {len(imagenes)}")
+        return imagenes
+
+    except Exception as e:
+        print(f"Error scanning directory: {str(e)}")
+        return []
 
 
 def guardar_resultados_en_csv(resultados, nombre_funcion):
     """
     Guarda los resultados en un archivo CSV.
     
-    :param resultados: Lista de resultados a guardar (valores numéricos).
+    :param resultados: Lista de resultados a guardar (pueden ser números, arrays o diccionarios).
     :param nombre_funcion: Nombre de la función utilizada, para el nombre del archivo CSV.
     """
-    # Crear la carpeta de salida si no existe
     if not os.path.exists('resultados'):
         os.makedirs('resultados')
     
-    # Nombre del archivo CSV
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     csv_filename = f'resultados/{nombre_funcion}_{timestamp}.csv'
     
-    # Guardar los resultados en el archivo CSV
     with open(csv_filename, mode='w', newline='') as file:
         writer = csv.writer(file)
-        # Escribir los encabezados
-        writer.writerow(["Imagen", "Resultado"])
-        for i, resultado in enumerate(resultados):
-            writer.writerow([f"Imagen_{i+1}", resultado])
+        
+        # Verificar si hay resultados
+        if not resultados or len(resultados) == 0:
+            print(f"No hay resultados para guardar en {nombre_funcion}")
+            return
+            
+        # Determinar el tipo de resultado y escribir los encabezados apropiados
+        if isinstance(resultados[0], dict):
+            # Para resultados tipo diccionario (como estadísticos)
+            headers = ["Imagen"] + list(resultados[0].keys())
+            writer.writerow(headers)
+            for i, resultado in enumerate(resultados):
+                row = [f"Imagen_{i+1}"] + list(resultado.values())
+                writer.writerow(row)
+        
+        elif isinstance(resultados[0], np.ndarray):
+            # Para resultados tipo array
+            try:
+                # Convertir a lista si es necesario
+                first_result = resultados[0].tolist() if isinstance(resultados[0], np.ndarray) else resultados[0]
+                
+                # Crear encabezados basados en la longitud del primer resultado
+                if isinstance(first_result, list):
+                    headers = ["Imagen"] + [f"Valor_{i}" for i in range(len(first_result))]
+                else:
+                    headers = ["Imagen", "Valor"]
+                
+                writer.writerow(headers)
+                
+                # Escribir cada fila
+                for i, resultado in enumerate(resultados):
+                    valores = resultado.tolist() if isinstance(resultado, np.ndarray) else [resultado]
+                    if isinstance(valores, list):
+                        row = [f"Imagen_{i+1}"] + valores
+                    else:
+                        row = [f"Imagen_{i+1}", valores]
+                    writer.writerow(row)
+            
+            except Exception as e:
+                print(f"Error al procesar resultados para {nombre_funcion}: {str(e)}")
+                return
+        
+        else:
+            # Para resultados simples (números)
+            writer.writerow(["Imagen", "Valor"])
+            for i, resultado in enumerate(resultados):
+                writer.writerow([f"Imagen_{i+1}", resultado])
+    
     print(f"Guardado {nombre_funcion} en {csv_filename}")
 
 
@@ -115,9 +174,7 @@ def procesar_imagenes(imagenes):
     resultados_tonalidades = []
 
      # Procesar cada imagen
-    for img_path in imagenes:
-        # Leer la imagen
-        image = cv2.imread(img_path)
+    for image in imagenes:
         
         # 1. Extraer características HOG
         hog_result = extraer_caracteristicas_hog(image)
@@ -192,5 +249,18 @@ def procesar_imagenes(imagenes):
     guardar_resultados_en_csv(resultados_tonalidades, "Tonalidades")
 
 # Cargar imágenes de prueba
-imagenes = obtener_imagenes_de_carpeta("VisionArtificial\\Vision Artificial\\Parcial 2\\images")
-procesar_imagenes(imagenes)
+# ...existing code...
+
+# Modify the path handling at the end of the file
+script_dir = os.path.dirname(os.path.abspath(__file__))
+img_dir = os.path.join(script_dir, '..', 'img')
+img_dir = os.path.normpath(img_dir)  # Normalize path separators
+
+print(f"Looking for images in: {img_dir}")
+imagenes = obtener_imagenes_de_carpeta(img_dir)
+
+if not imagenes:
+    print("No images were loaded. Check if the path is correct and images exist.")
+else:
+    print(f"Successfully loaded {len(imagenes)} images")
+    procesar_imagenes(imagenes)
