@@ -89,7 +89,7 @@ def procesar_imagenes(imagenes):
 def guardar_en_csv(imagenes):
     # Crear archivo CSV con timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    csv_filename = f"resultados_textuales_{timestamp}.csv"
+    csv_filename = f"resultados_funciones_{timestamp}.csv"
     
     # Encabezados del CSV basados en los datos textuales
     headers = [
@@ -272,5 +272,5 @@ def obtener_imagenes_de_carpeta(ruta_carpeta):
 
 # Cargar imágenes de prueba
 imagenes = obtener_imagenes_de_carpeta("VisionArtificial\\Vision Artificial\\Parcial 2\\images")
+guardar_en_csv(imagenes)
 procesar_imagenes(imagenes)
-#guardar_en_csv(imagenes)
