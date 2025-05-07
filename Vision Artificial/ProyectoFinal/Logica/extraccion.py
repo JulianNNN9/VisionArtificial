@@ -46,42 +46,42 @@ def obtener_imagenes_de_carpeta(ruta_carpeta):
     imagenes = []
 
     try:
-        # Normalize path
+        # Normalizar ruta
         ruta_carpeta = os.path.normpath(ruta_carpeta)
-        print(f"Scanning directory: {ruta_carpeta}")
+        print(f"Escaneando directorio: {ruta_carpeta}")
 
         if not os.path.isdir(ruta_carpeta):
-            print(f"Error: '{ruta_carpeta}' is not a valid directory")
+            print(f"Error: '{ruta_carpeta}' no es un directorio válido")
             return []
 
         for archivo in os.listdir(ruta_carpeta):
             try:
-                # Get full path using proper path joining
+                # Obtener ruta completa usando unión de rutas apropiada
                 ruta_imagen = os.path.join(ruta_carpeta, archivo)
                 
-                # Check file extension
+                # Verificar extensión del archivo
                 if os.path.splitext(archivo)[1].lower() in extensiones_imagenes:
-                    print(f"Attempting to load: {archivo}")
+                    print(f"Intentando cargar: {archivo}")
                     img = cv2.imdecode(
                         np.fromfile(ruta_imagen, dtype=np.uint8), 
                         cv2.IMREAD_COLOR
                     )
                     
                     if img is not None:
-                        print(f"Successfully loaded: {archivo}")
+                        print(f"Imagen cargada exitosamente: {archivo}")
                         imagenes.append(img)
                     else:
-                        print(f"Failed to load image: {archivo}")
+                        print(f"Error al cargar la imagen: {archivo}")
             
             except Exception as e:
-                print(f"Error processing {archivo}: {str(e)}")
+                print(f"Error procesando {archivo}: {str(e)}")
                 continue
 
-        print(f"Total images loaded: {len(imagenes)}")
+        print(f"Total de imágenes cargadas: {len(imagenes)}")
         return imagenes
 
     except Exception as e:
-        print(f"Error scanning directory: {str(e)}")
+        print(f"Error al escanear directorio: {str(e)}")
         return []
 
 
@@ -251,16 +251,16 @@ def procesar_imagenes(imagenes):
 # Cargar imágenes de prueba
 # ...existing code...
 
-# Modify the path handling at the end of the file
-script_dir = os.path.dirname(os.path.abspath(__file__))
-img_dir = os.path.join(script_dir, '..', 'img')
-img_dir = os.path.normpath(img_dir)  # Normalize path separators
+# Modificar el manejo de rutas al final del archivo
+ruta_script = os.path.dirname(os.path.abspath(__file__))
+ruta_imagenes = os.path.join(ruta_script, '..', 'img')
+ruta_imagenes = os.path.normpath(ruta_imagenes)  # Normalizar separadores de ruta
 
-print(f"Looking for images in: {img_dir}")
-imagenes = obtener_imagenes_de_carpeta(img_dir)
+print(f"Buscando imágenes en: {ruta_imagenes}")
+imagenes = obtener_imagenes_de_carpeta(ruta_imagenes)
 
 if not imagenes:
-    print("No images were loaded. Check if the path is correct and images exist.")
+    print("No se cargaron imágenes. Verifique que la ruta sea correcta y que existan las imágenes.")
 else:
-    print(f"Successfully loaded {len(imagenes)} images")
+    print(f"Se cargaron {len(imagenes)} imágenes exitosamente")
     procesar_imagenes(imagenes)
