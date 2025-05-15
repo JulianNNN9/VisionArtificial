@@ -17,6 +17,21 @@ import numpy as np
 import csv
 import os
 from datetime import datetime
+from funciones import (
+    metodos_estadisticos_primer_orden,
+    momentos_de_hu,
+    laplaciano_de_gauss,
+    detectar_circulos_Hough,
+    segmentar_grabcut,
+    extraer_orb,
+    ToGrayScale,
+    umbralizacion_adaptativa,
+    segmentacion_kmeans,
+    detectar_bordes_Canny,
+    SharpenImage,
+    calcular_histograma_color,
+    detectar_tonalidades
+)
 
 
 def obtener_imagenes_de_carpeta(ruta_carpeta):
@@ -26,53 +41,108 @@ def obtener_imagenes_de_carpeta(ruta_carpeta):
     :param ruta_carpeta: str, ruta de la carpeta donde están las imágenes.
     :return: list, lista de imágenes en formato numpy.ndarray.
     """
-    # Define las extensiones de archivos que se considerarán imágenes
     extensiones_imagenes = {".jpg", ".jpeg", ".png", ".gif", ".bmp", ".tiff", ".webp"}
-    imagenes = []  # Lista donde se almacenarán las imágenes cargadas
+    imagenes = []
 
-    # Verificar si la carpeta existe
-    if not os.path.isdir(ruta_carpeta):  # Comprueba si la ruta proporcionada es un directorio válido
-        print(f"La ruta '{ruta_carpeta}' no es una carpeta válida.")  # Mensaje de error si no existe
-        return []  # Retorna una lista vacía
+    try:
+        # Normalizar ruta
+        ruta_carpeta = os.path.normpath(ruta_carpeta)
+        print(f"Escaneando directorio: {ruta_carpeta}")
 
-    # Recorrer los archivos dentro de la carpeta
-    for archivo in os.listdir(ruta_carpeta):  # Itera sobre todos los archivos en la carpeta
-        ruta_imagen = os.path.join(ruta_carpeta, archivo)  # Obtiene la ruta completa del archivo
-        
-        # Verificar si la extensión del archivo está en la lista de imágenes permitidas
-        if os.path.splitext(archivo)[1].lower() in extensiones_imagenes:
-            img = cv2.imread(ruta_imagen)  # Lee la imagen con OpenCV
+        if not os.path.isdir(ruta_carpeta):
+            print(f"Error: '{ruta_carpeta}' no es un directorio válido")
+            return []
+
+        for archivo in os.listdir(ruta_carpeta):
+            try:
+                # Obtener ruta completa usando unión de rutas apropiada
+                ruta_imagen = os.path.join(ruta_carpeta, archivo)
+                
+                # Verificar extensión del archivo
+                if os.path.splitext(archivo)[1].lower() in extensiones_imagenes:
+                    print(f"Intentando cargar: {archivo}")
+                    img = cv2.imdecode(
+                        np.fromfile(ruta_imagen, dtype=np.uint8), 
+                        cv2.IMREAD_COLOR
+                    )
+                    
+                    if img is not None:
+                        print(f"Imagen cargada exitosamente: {archivo}")
+                        imagenes.append(img)
+                    else:
+                        print(f"Error al cargar la imagen: {archivo}")
             
-            if img is not None:  # Verifica que la imagen se haya cargado correctamente
-                imagenes.append(img)  # Agrega la imagen a la lista
-            else:
-                print(f"Advertencia: No se pudo cargar la imagen {archivo}")  # Mensaje si la imagen no se carga
+            except Exception as e:
+                print(f"Error procesando {archivo}: {str(e)}")
+                continue
 
-    return imagenes  # Retorna la lista de imágenes cargadas
+        print(f"Total de imágenes cargadas: {len(imagenes)}")
+        return imagenes
+
+    except Exception as e:
+        print(f"Error al escanear directorio: {str(e)}")
+        return []
 
 
 def guardar_resultados_en_csv(resultados, nombre_funcion):
     """
     Guarda los resultados en un archivo CSV.
     
-    :param resultados: Lista de resultados a guardar (valores numéricos).
+    :param resultados: Lista de resultados a guardar (pueden ser números, arrays o diccionarios).
     :param nombre_funcion: Nombre de la función utilizada, para el nombre del archivo CSV.
     """
-    # Crear la carpeta de salida si no existe
     if not os.path.exists('resultados'):
         os.makedirs('resultados')
     
-    # Nombre del archivo CSV
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     csv_filename = f'resultados/{nombre_funcion}_{timestamp}.csv'
     
-    # Guardar los resultados en el archivo CSV
     with open(csv_filename, mode='w', newline='') as file:
         writer = csv.writer(file)
-        # Escribir los encabezados
-        writer.writerow(["Imagen", "Resultado"])
-        for i, resultado in enumerate(resultados):
-            writer.writerow([f"Imagen_{i+1}", resultado])
+        
+        if not resultados or len(resultados) == 0:
+            print(f"No hay resultados para guardar en {nombre_funcion}")
+            return
+            
+        if isinstance(resultados[0], dict):
+            # Para resultados tipo diccionario (como estadísticos)
+            headers = ["Imagen"] + list(resultados[0].keys()) + ["Clase"]
+            writer.writerow(headers)
+            for i, resultado in enumerate(resultados):
+                clase = 0 if i < 8 else 1
+                row = [f"Imagen_{i+1}"] + list(resultado.values()) + [clase]
+                writer.writerow(row)
+        
+        elif isinstance(resultados[0], np.ndarray):
+            try:
+                first_result = resultados[0].tolist() if isinstance(resultados[0], np.ndarray) else resultados[0]
+                
+                if isinstance(first_result, list):
+                    headers = ["Imagen"] + [f"Valor_{i}" for i in range(len(first_result))] + ["Clase"]
+                else:
+                    headers = ["Imagen", "Valor", "Clase"]
+                
+                writer.writerow(headers)
+                
+                for i, resultado in enumerate(resultados):
+                    clase = 0 if i < 8 else 1
+                    valores = resultado.tolist() if isinstance(resultado, np.ndarray) else [resultado]
+                    if isinstance(valores, list):
+                        row = [f"Imagen_{i+1}"] + valores + [clase]
+                    else:
+                        row = [f"Imagen_{i+1}", valores, clase]
+                    writer.writerow(row)
+            
+            except Exception as e:
+                print(f"Error al procesar resultados para {nombre_funcion}: {str(e)}")
+                return
+        
+        else:
+            writer.writerow(["Imagen", "Valor", "Clase"])
+            for i, resultado in enumerate(resultados):
+                clase = 0 if i < 8 else 1
+                writer.writerow([f"Imagen_{i+1}", resultado, clase])
+    
     print(f"Guardado {nombre_funcion} en {csv_filename}")
 
 
@@ -82,8 +152,8 @@ def procesar_imagenes(imagenes):
     
     :param imagenes: Lista de imágenes (rutas de imágenes) a procesar.
     """
+    print("Iniciando procesamiento de imágenes...")
     # Resultados de cada función
-    resultados_hog = []
     resultados_momentos_hu = []
     resultados_estadisticos = []
     resultados_laplaciano = []
@@ -99,13 +169,7 @@ def procesar_imagenes(imagenes):
     resultados_tonalidades = []
 
      # Procesar cada imagen
-    for img_path in imagenes:
-        # Leer la imagen
-        image = cv2.imread(img_path)
-        
-        # 1. Extraer características HOG
-        hog_result = extraer_caracteristicas_hog(image)
-        resultados_hog.append(hog_result)
+    for image in imagenes:
         
         # 2. Métodos estadísticos primer orden
         estadisticos_result = metodos_estadisticos_primer_orden(image)
@@ -160,7 +224,6 @@ def procesar_imagenes(imagenes):
         resultados_tonalidades.append(tonalidad_result)
     
     # Guardar los resultados en archivos CSV
-    guardar_resultados_en_csv(resultados_hog, "HOG")
     guardar_resultados_en_csv(resultados_momentos_hu, "Momentos_Hu")
     guardar_resultados_en_csv(resultados_estadisticos, "Estadisticos_Primer_Orden")
     guardar_resultados_en_csv(resultados_laplaciano, "Laplaciano_Gauss")
@@ -175,6 +238,16 @@ def procesar_imagenes(imagenes):
     guardar_resultados_en_csv(resultados_histograma_color, "Histograma_Color")
     guardar_resultados_en_csv(resultados_tonalidades, "Tonalidades")
 
-# Cargar imágenes de prueba
-imagenes = obtener_imagenes_de_carpeta("VisionArtificial\\Vision Artificial\\Parcial 2\\images")
-procesar_imagenes(imagenes)
+# Modificar el manejo de rutas al final del archivo
+ruta_script = os.path.dirname(os.path.abspath(__file__))
+ruta_imagenes = os.path.join(ruta_script, '..', 'imagenes')  # Cambia esta ruta según tu estructura de carpetas
+ruta_imagenes = os.path.normpath(ruta_imagenes)  # Normalizar separadores de ruta
+
+print(f"Buscando imágenes en: {ruta_imagenes}")
+imagenes = obtener_imagenes_de_carpeta(ruta_imagenes)
+
+if not imagenes:
+    print("No se cargaron imágenes. Verifique que la ruta sea correcta y que existan las imágenes.")
+else:
+    print(f"Se cargaron {len(imagenes)} imágenes exitosamente")
+    procesar_imagenes(imagenes)
