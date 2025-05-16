@@ -3,67 +3,79 @@ import cv2
 import numpy as np
 from glob import glob
 
-# Definir transformaciones
-def rotate_image(image, angle):
-    (h, w) = image.shape[:2]
-    center = (w // 2, h // 2)
-    M = cv2.getRotationMatrix2D(center, angle, 1.0)
-    return cv2.warpAffine(image, M, (w, h))
+# Configuración
+valid_extensions = [".jpg", ".jpeg", ".png", ".bmp", ".tif"]
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
-def apply_gaussian_blur(image, ksize=(5, 5)):
-    return cv2.GaussianBlur(image, ksize, 0)
+def agregar_ruido_gaussiano(imagen, media=0, sigma=15):
+    """Agrega ruido gaussiano a la imagen."""
+    ruido = np.random.normal(media, sigma, imagen.shape).astype(np.uint8)
+    imagen_ruido = cv2.add(imagen, ruido)
+    return imagen_ruido
 
-def flip_horizontal(image):
-    return cv2.flip(image, 1)
+def ajustar_brillo(imagen, factor=1.2):
+    """Ajusta el brillo de la imagen."""
+    hsv = cv2.cvtColor(imagen, cv2.COLOR_BGR2HSV)
+    hsv = np.array(hsv, dtype=np.float64)
+    hsv[..., 2] = hsv[..., 2] * factor
+    hsv[..., 2][hsv[..., 2] > 255] = 255
+    hsv = np.array(hsv, dtype=np.uint8)
+    return cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 
-def apply_erosion(image, kernel_size=3):
+def aplicar_erosion(imagen, kernel_size=3):
+    """Aplica erosión a la imagen."""
     kernel = np.ones((kernel_size, kernel_size), np.uint8)
-    return cv2.erode(image, kernel, iterations=1)
+    return cv2.erode(imagen, kernel, iterations=1)
 
-def apply_dilation(image, kernel_size=3):
+def aplicar_dilatacion(imagen, kernel_size=3):
+    """Aplica dilatación a la imagen."""
     kernel = np.ones((kernel_size, kernel_size), np.uint8)
-    return cv2.dilate(image, kernel, iterations=1)
+    return cv2.dilate(imagen, kernel, iterations=1)
 
-def change_brightness(image, value=30):
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    h, s, v = cv2.split(hsv)
-    v = np.clip(v + value, 0, 255)
-    final_hsv = cv2.merge((h, s, v))
-    return cv2.cvtColor(final_hsv, cv2.COLOR_HSV2BGR)
+def guardar_variaciones(nombre_base, imagen, transformaciones):
+    """Guarda las variaciones de la imagen en el directorio actual."""
+    for nombre, img in transformaciones.items():
+        ruta_salida = os.path.join(script_dir, f"{nombre_base}_{nombre}.jpg")
+        cv2.imwrite(ruta_salida, img)
+        print(f"Guardada variación: {os.path.basename(ruta_salida)}")
 
-# Directorio actual
-path = os.getcwd()
-image_extensions = ['*.jpg', '*.jpeg', '*.png']
-image_paths = []
+def main():
+    # Obtener todas las imágenes en el directorio actual
+    imagenes = []
+    for ext in valid_extensions:
+        imagenes.extend(glob(os.path.join(script_dir, f"*{ext}")))
 
-# Obtener todas las imágenes
-for ext in image_extensions:
-    image_paths.extend(glob(os.path.join(path, ext)))
+    if not imagenes:
+        print("No se encontraron imágenes para procesar")
+        return
 
-# Crear aumentaciones
-for image_path in image_paths:
-    filename = os.path.splitext(os.path.basename(image_path))[0]
-    image = cv2.imread(image_path)
+    print(f"Encontradas {len(imagenes)} imágenes para procesar")
 
-    if image is None:
-        continue
+    for ruta_imagen in imagenes:
+        nombre_base = os.path.splitext(os.path.basename(ruta_imagen))[0]
+        print(f"\nProcesando: {nombre_base}")
+        
+        imagen = cv2.imread(ruta_imagen)
+        if imagen is None:
+            print(f"Error al cargar la imagen: {ruta_imagen}")
+            continue
 
-    # Aplicar transformaciones
-    transformations = {
-        '_rotated_15': rotate_image(image, 15),
-        '_rotated_-15': rotate_image(image, -15),
-        '_flipped': flip_horizontal(image),
-        '_blurred': apply_gaussian_blur(image),
-        '_eroded': apply_erosion(image),
-        '_dilated': apply_dilation(image),
-        '_brighter': change_brightness(image, 40),
-        '_darker': change_brightness(image, -40),
-    }
+        # Definir las transformaciones a aplicar
+        transformaciones = {
+            "rot90": cv2.rotate(imagen, cv2.ROTATE_90_CLOCKWISE),
+            "rot180": cv2.rotate(imagen, cv2.ROTATE_180),
+            "rot270": cv2.rotate(imagen, cv2.ROTATE_90_COUNTERCLOCKWISE),
+            "flip_h": cv2.flip(imagen, 1),
+            "flip_v": cv2.flip(imagen, 0),
+            "bright": ajustar_brillo(imagen),
+            "eroded": aplicar_erosion(imagen),
+            "dilated": aplicar_dilatacion(imagen),
+            "noisy": agregar_ruido_gaussiano(imagen)
+        }
 
-    # Guardar imágenes transformadas
-    for suffix, transformed_image in transformations.items():
-        output_filename = f"{filename}{suffix}.jpg"
-        output_path = os.path.join(path, output_filename)
-        cv2.imwrite(output_path, transformed_image)
+        guardar_variaciones(nombre_base, imagen, transformaciones)
 
-print("Aumentación de imágenes completada.")
+    print("\nAumentación de datos completada.")
+
+if __name__ == "__main__":
+    main()
