@@ -145,8 +145,53 @@ def guardar_resultados_en_csv(resultados, nombre_funcion):
     
     print(f"Guardado {nombre_funcion} en {csv_filename}")
 
+def ajustar_brillo_contraste(img, alpha=1.2, beta=20):
+    """
+    Ajusta el brillo y contraste de la imagen.
+    Alpha > 1 aumenta el contraste, beta > 0 aumenta el brillo.
+    """
+    return cv2.convertScaleAbs(img, alpha=alpha, beta=beta)
 
-def procesar_imagenes(imagenes):
+def aplicar_filtro_gaussiano(img, kernel_size=5):
+    """
+    Aplica un suavizado con filtro gaussiano para reducir el ruido.
+    """
+    return cv2.GaussianBlur(img, (kernel_size, kernel_size), 0)
+
+def deteccion_bordes_canny(img, low=100, high=200):
+    """
+    Convierte la imagen a escala de grises y aplica detección de bordes con Canny.
+    """
+    gris = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    bordes = cv2.Canny(gris, low, high)
+    return bordes
+
+def segmentar_kmeans(img, k=3):
+    """
+    Segmenta la imagen usando KMeans con k clusters.
+    """
+    Z = img.reshape((-1, 3))
+    Z = np.float32(Z)
+
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+    _, labels, centers = cv2.kmeans(Z, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+
+    centers = np.uint8(centers)
+    segmentada = centers[labels.flatten()]
+    segmentada = segmentada.reshape((img.shape))
+    return segmentada
+
+def preprocesar_imagenes(lista_imagenes):
+    procesadas = []
+
+    for img in lista_imagenes:
+        img = ajustar_brillo_contraste(img)
+        img = aplicar_filtro_gaussiano(img)
+        img = segmentar_kmeans(img)
+        procesadas.append(img)
+
+    return procesadas
+def extraccion_caracteristicas(imagenes):
     """
     Aplica todas las funciones a una lista de imágenes y guarda los resultados en archivos CSV.
     
@@ -247,9 +292,10 @@ ruta_imagenes = os.path.normpath(ruta_imagenes)  # Normalizar separadores de rut
 
 print(f"Buscando imágenes en: {ruta_imagenes}")
 imagenes = obtener_imagenes_de_carpeta(ruta_imagenes)
+imagenes_procesadas = obtener_imagenes_de_carpeta(ruta_imagenes)
 
-if not imagenes:
+if not imagenes_procesadas:
     print("No se cargaron imágenes. Verifique que la ruta sea correcta y que existan las imágenes.")
 else:
-    print(f"Se cargaron {len(imagenes)} imágenes exitosamente")
-    procesar_imagenes(imagenes)
+    print(f"Se cargaron {len(imagenes_procesadas)} imágenes exitosamente")
+    extraccion_caracteristicas(imagenes_procesadas)
